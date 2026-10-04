@@ -1,0 +1,32 @@
+@JeffyGPT.Api_HostAddress = http://localhost:5008
+
+### Health
+GET {{JeffyGPT.Api_HostAddress}}/health
+Accept: application/json
+
+###
+
+### Chat
+POST {{JeffyGPT.Api_HostAddress}}/api/chat
+Content-Type: application/json
+
+{
+  "messages": [
+    { "role": "user", "content": "hello" }
+  ]
+}
+
+###
+
+### Chat stream
+POST {{JeffyGPT.Api_HostAddress}}/api/chat/stream
+Content-Type: application/json
+Accept: application/x-ndjson
+
+{
+  "messages": [
+    { "role": "user", "content": "hello" }
+  ]
+}
+
+###

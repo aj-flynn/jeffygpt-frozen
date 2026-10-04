@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/JeffyAspire/">
+    <Project DefaultStartup="true" Path="src/JeffyAspire/JeffyAspire.AppHost/JeffyAspire.AppHost.csproj" />
+    <Project Path="src/JeffyAspire/JeffyAspire.ServiceDefaults/JeffyAspire.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/JeffyGPT/">
+    <Project Path="src/JeffyGPT/JeffyGPT.Api/JeffyGPT.Api.csproj" />
+    <Project Path="src/JeffyGPT/JeffyGPT.Application/JeffyGPT.Application.csproj" />
+    <Project Path="src/JeffyGPT/JeffyGPT.Contracts/JeffyGPT.Contracts.csproj" />
+    <Project Path="src/JeffyGPT/JeffyGPT.Infrastructure/JeffyGPT.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/JeffyGPT/JeffyGPT.Web/">
+    <File Path="src/JeffyGPT/JeffyGPT.Web/package.json" />
+  </Folder>
+  <Folder Name="/src/JeffyMCP/">
+    <Project Path="src/JeffyMCP/JeffyMCP.csproj" />
+  </Folder>
+  <Folder Name="/tests/JeffyMCP/">
+    <Project Path="tests/JeffyMCP/JeffyMCP.Tests/JeffyMCP.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/JeffyGPT/">
+    <Project Path="tests/JeffyGPT/JeffyGPT.Api.Tests/JeffyGPT.Api.Tests.csproj" />
+    <Project Path="tests/JeffyGPT/JeffyGPT.Application.Tests/JeffyGPT.Application.Tests.csproj" />
+  </Folder>
+</Solution>

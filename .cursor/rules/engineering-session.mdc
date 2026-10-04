@@ -1,0 +1,6 @@
+---
+description: Re-enter an active engineering session before other work.
+alwaysApply: true
+---
+
+If `.scratch/engineering/session.md` exists and its `status` is `active`, read the `engineering` skill's SKILL.md under `.cursor/skills/` and follow it before any other work. The session file is the source of truth for the design tree and the active child skills.

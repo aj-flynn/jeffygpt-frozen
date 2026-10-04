@@ -1,0 +1,63 @@
+/* Forest Reference: mixed-content documentation in two explicit themes. */
+.forest.forest-handbook{--bg:#0b1712;--rail-bg:#0e1c15;--ink:#f7f2e8;--muted:#b7c6b8;--line:#35483c;--surface:#152a21;--accent:#f3cf96;--hover:#213d2e;background:var(--bg);color:var(--ink);color-scheme:dark}
+html[data-theme=light] .forest-handbook{--bg:#f7f2e8;--rail-bg:#efede2;--ink:#19241b;--muted:#52634f;--line:#ccd0bd;--surface:#eeeadd;--accent:#3f603b;--hover:#e4e6d6;color-scheme:light}
+html[data-theme=light]{scrollbar-color:#697c60 #efede2}
+.forest-handbook .site-header,.forest-handbook .sidebar{background:var(--rail-bg);color:var(--ink);border-color:var(--line)}
+.forest-handbook .doc-layout{grid-template-columns:248px minmax(0,1fr);max-width:1360px}
+.forest-handbook .article{padding:48px 52px;max-width:880px;align-self:start}
+.forest-handbook .article h1{font-size:46px;max-width:650px}
+.forest-handbook .doc-intro>p:not(.lead):not(.example-note){max-width:67ch;color:var(--muted)}
+.forest-handbook .lead{font-size:22px;line-height:1.45;max-width:55ch}
+.forest-handbook .article h3{font-size:20px;margin-top:30px}
+.forest-handbook .article h2{font-size:28px}
+.forest-handbook .intro-links{gap:16px 24px}
+.forest-handbook .sidebar{padding:32px 24px}
+.forest-handbook .collection-name{font-size:18px;margin-bottom:24px}
+.forest-handbook .sidebar-inner{top:82px;max-height:calc(100vh - 104px);overflow:auto;scrollbar-width:thin;padding:4px 8px 12px;margin:-4px -8px 0}
+.forest-handbook .nav-group:first-child{margin-top:8px}
+.forest-handbook .nav-group{margin-top:22px}
+.forest-handbook .sidebar nav{margin-top:0}
+.forest-handbook .rail-note{margin-top:28px;font-size:13px}
+.forest-handbook .rail-note small{margin-left:0}
+.handbook-menu{border:0}.handbook-menu>summary{display:none}
+.theme-control{margin-left:auto;display:flex;align-items:center;gap:12px}
+.theme-control label{font-size:14px;color:var(--muted)}
+.theme-control select{width:115px;min-height:44px;font-size:15px}
+.forest-handbook .brand-light{display:none}
+html[data-theme=light] .forest-handbook .brand-dark{display:none}
+html[data-theme=light] .forest-handbook .brand-light{display:block}
+.prose-list{padding-left:22px;margin:20px 0 0}.prose-list li{padding-left:6px;margin:10px 0}
+.workflow-figure{margin:28px 0}.workflow-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;padding:0;margin:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--surface)}
+.workflow-stages li{padding:20px 16px;border-right:1px solid var(--line);position:relative}
+.workflow-stages li:last-child{border-right:0}.workflow-stages span{font-size:18px;font-weight:600;color:var(--accent)}
+.workflow-stages p{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.45}
+.workflow-figure figcaption{font-size:13px;color:var(--muted);margin-top:12px}
+.forest-handbook table{font-size:15px}.forest-handbook .code-example{margin:24px 0}
+.forest-handbook .code-example,.forest-handbook .response-example{--accent:#f3cf96;--hover:#21372a}
+.forest-handbook #request-example{scroll-margin-top:110px}
+.api-response{margin-top:24px}.api-response>summary span{font-size:13px;color:var(--muted);margin-left:16px}
+.forest-handbook .api-response .response-example{margin-top:0;margin-bottom:24px}
+.forest-handbook .release-entry h3{display:flex;gap:18px;align-items:center}.release-entry h3 span{font-size:13px;font-weight:400;color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+@media(max-width:1200px){.forest-handbook .doc-layout{grid-template-columns:220px minmax(0,1fr)}.forest-handbook .article{padding:40px 32px}.forest-handbook .sidebar{padding:28px 20px}.forest-handbook .article h1{font-size:40px}.forest-handbook .lead{font-size:20px}.theme-control{gap:8px}}
+@media(max-width:1050px){.forest-handbook .doc-layout{grid-template-columns:220px minmax(0,1fr)}.forest-handbook .sidebar{grid-row:auto}.forest-handbook .article{padding:40px}.forest-handbook .site-header{gap:24px}.forest-handbook .header-title{display:block;padding-left:24px}}
+@media(max-width:760px){.forest-handbook .doc-layout{display:block}.forest-handbook .site-header{height:auto;min-height:90px;padding:20px;gap:16px;flex-wrap:wrap}.forest-handbook .header-title{display:none}.forest-handbook .site-header img{width:180px}.theme-control label{font-size:13px}.theme-control select{width:96px;font-size:14px}.forest-handbook .sidebar{display:block;padding:18px 24px 0;border-right:0;border-bottom:1px solid var(--line)}.forest-handbook .sidebar-inner{position:static;max-height:none;margin:0;padding:0;overflow:visible}.forest-handbook .collection-name,.forest-handbook .rail-note{display:none}.forest-handbook .search-label{font-size:13px}.forest-handbook #doc-search{font-size:16px}.forest-handbook .search-feedback:empty{display:none}.handbook-menu>summary{display:list-item;padding:14px 0;min-height:48px}.handbook-menu nav{padding-bottom:20px}.forest-handbook .article{padding:32px 24px}.forest-handbook .article h1{font-size:36px}.forest-handbook .lead{font-size:20px}.forest-handbook .article h2{font-size:26px}.forest-handbook .workflow-stages{grid-template-columns:1fr}.workflow-stages li{border-right:0;border-bottom:1px solid var(--line);padding:18px 20px}.workflow-stages li:last-child{border-bottom:0}.workflow-stages p br{display:none}.forest-handbook .table-wrap{max-width:100%}.forest-handbook .theme-control{gap:8px}.forest-handbook .site-header .brand-link{margin-right:auto}.forest-handbook .release-entry h3{flex-wrap:wrap;gap:8px 16px}}
+@media(max-width:430px){.forest-handbook .site-header{gap:10px}.forest-handbook .site-header img{width:164px}.theme-control{gap:5px!important}.theme-control label{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}.theme-control select{width:94px}}
+@media print{.forest-handbook .sidebar,.forest-handbook .context-rail,.theme-control{display:none!important}.forest-handbook .doc-layout{display:block}.forest-handbook .site-header{background:white!important}.forest-handbook .brand-dark{display:none!important}.forest-handbook .brand-light{display:block!important}.forest-handbook .article{padding:0}.forest-handbook details{display:block}}
+
+/* The left rail has one vertical scroll area and a persistent appearance footer. */
+.forest-handbook .sidebar{position:sticky;top:56px;align-self:start;height:calc(100dvh - var(--sidebar-offset,160px));min-height:200px;padding:0;min-width:0}
+.forest-handbook .sidebar-inner{position:static;display:flex;flex-direction:column;height:100%;max-height:none;overflow:visible;padding:0;margin:0;min-width:0}
+.forest-handbook .sidebar-scroll{flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;padding:32px 24px 20px;scrollbar-gutter:stable}
+.forest-handbook .sidebar nav a{margin:2px 0;padding:8px;overflow-wrap:anywhere}
+.forest-handbook .sidebar .theme-control{flex:none;display:flex;justify-content:space-between;gap:8px!important;margin:0;padding:16px 20px;border-top:1px solid var(--line);background:var(--rail-bg)}
+.forest-handbook .sidebar .theme-control label{position:static;width:auto;height:auto;clip-path:none;overflow:visible;font-size:14px}
+.forest-handbook .sidebar .theme-control select{width:104px;min-width:0}
+@media(max-width:1200px){.forest-handbook .sidebar-scroll{padding:28px 16px 20px}.forest-handbook .sidebar .theme-control{padding:14px 16px}.forest-handbook .sidebar .theme-control select{width:94px}}
+@media(max-width:760px){.forest-handbook .sidebar{position:static;height:auto;min-height:0;padding:0}.forest-handbook .sidebar-scroll{flex:none;overflow:visible;scrollbar-gutter:auto;padding:18px 24px 0}.forest-handbook .sidebar-inner{height:auto}.forest-handbook .sidebar .theme-control{padding:12px 24px}.forest-handbook .sidebar .theme-control select{width:115px}}
+
+/* Selected template: no comparison strip above the document. */
+html{scroll-padding-top:24px}
+.forest-handbook .sidebar{top:0;height:calc(100dvh - var(--sidebar-offset,104px))}
+.forest-handbook #request-example{scroll-margin-top:24px}
+@media(max-width:760px){.forest-handbook .sidebar{height:auto}}

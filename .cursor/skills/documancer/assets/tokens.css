@@ -1,0 +1,12 @@
+/* Portable snapshot of the current website's design vocabulary. */
+@font-face{font-family:"Source Sans 3";src:url("fonts/source-sans-3-variable.woff2") format("woff2");font-weight:200 900;font-style:normal;font-display:swap}
+:root{
+ --forest:#0b1712;--cream:#f7f2e8;--secondary:#e0e4d9;--gold:#f3cf96;
+ --sage:#8fa68a;--harvest:#d4a574;--primary-fill:#edc98e;--primary-ink:#19241b;--primary-hover:#f8d9a5;
+ --rule:#a4b29450;--dialog:#152a21;--panel-radius:13px;--control-radius:5px;
+ --space-tight:8px;--space-compact:12px;--space-related:16px;--space-group:24px;--space-panel:32px;--space-section:64px;
+ --font-family:"Source Sans 3","Segoe UI",sans-serif;
+ --panel-fill:linear-gradient(135deg,rgba(9,27,21,.94),rgba(9,27,21,.87) 52%,rgba(9,27,21,.70));
+ --panel-border:#a4b294a6;--panel-edge-top:#c5ceb3ad;--panel-edge-left:#b9c7a7ad;
+ --panel-inset:inset 0 0 0 1px #08170ec9,inset 0 2px 1px #e3edcf3b;
+}

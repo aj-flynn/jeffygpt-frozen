@@ -1,0 +1,103 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/JeffyGPT.slnx",
+        "-c",
+        "Debug",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-apphost",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/JeffyAspire.AppHost.csproj",
+        "-c",
+        "Debug",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/JeffyGPT/JeffyGPT.Api/JeffyGPT.Api.csproj",
+        "-c",
+        "Debug",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "aspire-mark-fake",
+      "dependsOn": "build-apphost",
+      "type": "shell",
+      "command": "Set-Content -Path '${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/.run-assistant-provider' -Value 'Fake' -NoNewline",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      }
+    },
+    {
+      "label": "aspire-mark-openai",
+      "dependsOn": "build-apphost",
+      "type": "shell",
+      "command": "Set-Content -Path '${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/.run-assistant-provider' -Value 'OpenAiCompatible' -NoNewline",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      }
+    },
+    {
+      "label": "aspire-clear-assistant-provider",
+      "type": "shell",
+      "command": "Remove-Item -Force -ErrorAction SilentlyContinue '${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/.run-assistant-provider'",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      }
+    },
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/JeffyGPT.slnx",
+        "-c",
+        "Debug",
+        "--no-restore"
+      ],
+      "group": "test",
+      "problemMatcher": "$msCompile",
+      "dependsOn": "build"
+    }
+  ]
+}

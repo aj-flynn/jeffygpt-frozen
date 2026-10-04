@@ -1,0 +1,35 @@
+.chat-layout {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 0;
+  border: 2px solid var(--den-edge);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--nest) 12%, transparent), transparent 28%),
+    var(--surface-elevated);
+  box-shadow: var(--den-inset);
+  position: relative;
+}
+
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-panel__transcript {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.chat-panel__error {
+  flex-shrink: 0;
+  margin: 0 1.1rem 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--error);
+}

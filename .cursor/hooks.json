@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": "python .cursor/hooks/ensure-docs.py record"
+      }
+    ],
+    "stop": [
+      {
+        "command": "python .cursor/hooks/ensure-docs.py",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

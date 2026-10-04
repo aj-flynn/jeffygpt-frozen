@@ -1,0 +1,60 @@
+.den-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid var(--den-edge);
+  background: var(--surface-muted);
+  position: relative;
+  z-index: 2;
+}
+
+.den-chrome__tally {
+  margin-left: 0.35rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rust);
+  border: 1px dashed var(--whisker);
+  padding: 0.2rem 0.45rem;
+}
+
+.den-chrome__status {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gleam);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.den-chrome__status::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rust);
+  box-shadow: 0 0 8px var(--rust);
+  animation: den-status-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes den-status-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .den-chrome__status::before {
+    animation: none;
+    opacity: 1;
+  }
+}

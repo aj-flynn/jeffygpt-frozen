@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "mode": "uat",
+  "title": "Documentation acceptance plan",
+  "lead": "Judge whether the reader is comfortable to use and whether it reports your observations accurately.",
+  "identity": {
+    "id": "DOCUMANCER-UAT",
+    "version": "1.0",
+    "date": "2026-09-19",
+    "source": "documancer package 1.4.0 example",
+    "readiness": "Render all three example files together. Human acceptance has not been recorded."
+  },
+  "overview": [
+    {
+      "type": "paragraph",
+      "text": "This plan tests the generated documentation reader's appearance, navigation and summary generation. It does not accept features in another application. The journeys begin Untested; record your own judgment after performing them."
+    }
+  ],
+  "setup": [
+    {
+      "type": "steps",
+      "items": [
+        "Render examples/set.json with the --set option to include all three guides in the same generated set.",
+        "Open uat.html in your browser. Keep this tab open; no account or external service is required.",
+        "Have a local scratch document available to check pasted summary text."
+      ]
+    },
+    {
+      "type": "callout",
+      "title": "Navigation during testing",
+      "text": "Links to the technical reference and user guide open in a new tab, keeping this plan and its results open."
+    }
+  ],
+  "tests": [
+    {
+      "id": "UAT-01",
+      "title": "Read in both themes",
+      "brief": "Judge text readability and visible focus in the dark and light appearances.",
+      "prerequisites": [
+        {
+          "type": "paragraph",
+          "text": "Use this plan. No additional data is needed."
+        }
+      ],
+      "steps": [
+        "Choose Dark in Appearance. Read the test and use Tab to move through its result controls.",
+        "Choose Light. Read the same text and inspect the notes field.",
+        "Return to the appearance you prefer."
+      ],
+      "expected": "Text, controls and focus indicators remain readable. The wordmark suits each background.",
+      "problemSigns": "Invisible focus, unreadable text or a wordmark that disappears.",
+      "reset": "Choose System to restore the device preference.",
+      "rehearsal": "No rehearsal claim is embedded in this reusable example. Check the current package verification report separately."
+    },
+    {
+      "id": "UAT-02",
+      "title": "Find a topic",
+      "brief": "Judge whether the topic menu gets you to the requested information.",
+      "prerequisites": [
+        {
+          "type": "paragraph",
+          "text": "Open the companion user-guide.html in a separate tab. Search text: appearance."
+        }
+      ],
+      "steps": [
+        "Type appearance in Find in this document in the user guide.",
+        "Choose Choose your appearance in the matching menu.",
+        "Press Escape in the search field to restore the full menu. Return to the UAT tab."
+      ],
+      "expected": "The matching topic opens. Clearing search restores all topics. On a narrow screen, search opens the menu and choosing a topic closes it.",
+      "problemSigns": "A missing match, the wrong destination or an inaccessible mobile menu.",
+      "reset": "Clear the search; this journey does not modify other test data.",
+      "rehearsal": "No rehearsal claim is embedded in this reusable example."
+    },
+    {
+      "id": "UAT-03",
+      "title": "Generate useful results",
+      "brief": "Judge whether the summary contains your latest observations and copies in one action.",
+      "prerequisites": [
+        {
+          "type": "paragraph",
+          "text": "Use this plan and a local scratch document. Example note: Theme labels are clear. Clipboard permission may be allowed or blocked by your browser."
+        }
+      ],
+      "steps": [
+        "Enter the example note before choosing a result.",
+        "Go to Summary and select Generate summary. If copying is allowed, paste into the scratch document.",
+        "Check that the summary includes every test ID, five result counts, the plan identity and your note.",
+        "Return to this test and record your actual result. Generate again to include that final choice."
+      ],
+      "expected": "One action generates and copies current results. If copying is denied, text remains visible and selected with an accurate message. Editing a result or note marks the old summary stale.",
+      "problemSigns": "Missing notes, wrong counts, false copy confirmation or a required separate Copy summary action.",
+      "reset": "Clear the example note or change the result to Untested if you were only exploring the controls.",
+      "rehearsal": "No rehearsal claim is embedded in this reusable example."
+    }
+  ]
+}

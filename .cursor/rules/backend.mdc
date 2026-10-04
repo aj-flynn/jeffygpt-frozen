@@ -1,0 +1,37 @@
+---
+description: ASP.NET Core backend conventions for JeffyGPT
+globs: src/JeffyGPT/JeffyGPT.Api/**,src/JeffyGPT/JeffyGPT.Application/**,src/JeffyGPT/JeffyGPT.Infrastructure/**,src/JeffyGPT/JeffyGPT.Contracts/**
+alwaysApply: false
+---
+
+# Backend Rules
+
+- Use ASP.NET Core minimal APIs or controllers consistently; do not mix casually.
+- Use dependency injection for services.
+- Keep endpoints thin — map routes in `Endpoints/` and delegate to Application services.
+- Put business logic in the Application layer, not in endpoints or Infrastructure.
+- Keep LLM provider code behind `IAssistantClient` and related interfaces.
+- Do not let frontend-specific concepts leak into backend models or Contracts.
+- Use strongly typed request/response DTOs in `JeffyGPT.Contracts`.
+- Use async APIs for I/O.
+- Use structured logging.
+- Do not log secrets, prompts containing private data, API keys, or full model responses unless explicitly configured.
+
+## Conditionals
+
+- Prefer named predicate/helper functions over inline compound boolean expressions when the condition encodes domain, security, or protocol rules.
+- Use `private static` helpers on the owning type for single-class logic.
+- Use `internal static` helpers plus `InternalsVisibleTo` for pure predicates that deserve direct unit tests.
+- Prefer shared helpers or options methods when the same condition appears in two or more places.
+
+## Project layout
+
+| Project | Responsibility |
+|---------|----------------|
+| `JeffyGPT.Api` | HTTP host, CORS, endpoint mapping, DI registration |
+| `JeffyGPT.Application` | Orchestration, validation, interfaces |
+| `JeffyGPT.Contracts` | Shared DTOs |
+| `JeffyGPT.Infrastructure` | External integrations, LLM clients (`Chat/`), MCP client (`Mcp/`), tool executor (`Tools/`) |
+| `JeffyMCP` | Standalone MCP server hosting tools |
+
+Register services via `AddApplication()` and `AddInfrastructure()` extension methods. MCP client + tool executor register via `AddMcpTools()` in `Infrastructure/Mcp/McpDependencyInjection.cs`. Tool implementations live in `src/JeffyMCP/` (see `.roots/docs/jeffymcp.md`).

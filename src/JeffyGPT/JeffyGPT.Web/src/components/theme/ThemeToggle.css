@@ -1,0 +1,28 @@
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px dashed var(--whisker);
+  background: transparent;
+  color: var(--gleam);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.theme-toggle:hover {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.theme-toggle:focus-visible {
+  outline: 0.125rem solid var(--gleam);
+  outline-offset: -3px;
+}
+
+.theme-toggle__icon {
+  display: block;
+}

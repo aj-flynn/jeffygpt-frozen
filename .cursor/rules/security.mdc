@@ -1,0 +1,13 @@
+---
+description: Security rules for JeffyGPT
+alwaysApply: true
+---
+
+# Security Rules
+
+- Never commit secrets.
+- Use environment variables or user secrets for local config.
+- Treat prompts, tool arguments, uploaded files, and model responses as untrusted input.
+- Validate all external input.
+- Avoid exposing internal exception details to the frontend.
+- Require explicit user approval before destructive tool actions.

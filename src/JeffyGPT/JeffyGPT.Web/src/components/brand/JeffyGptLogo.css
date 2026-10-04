@@ -1,0 +1,26 @@
+.jgpt-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.jgpt-logo__icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.jgpt-logo__wordmark {
+  font-family: var(--heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+.jgpt-logo__jeffy {
+  color: var(--jgpt-wordmark-jeffy);
+}
+
+.jgpt-logo__gpt {
+  color: var(--jgpt-wordmark-gpt);
+}

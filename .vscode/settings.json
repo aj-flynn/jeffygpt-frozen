@@ -1,0 +1,4 @@
+{
+  "dotnet.defaultSolution": "JeffyGPT.slnx",
+  "aspire.dashboardBrowser": "openExternalBrowser"
+}

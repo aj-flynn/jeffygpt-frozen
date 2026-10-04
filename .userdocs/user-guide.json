@@ -1,0 +1,334 @@
+{
+  "schemaVersion": 1,
+  "mode": "user-guide",
+  "title": "Using JeffyGPT",
+  "lead": "Start the local chat, send a message, and ask Jeffy to read a file.",
+  "identity": {
+    "id": "JEFFYGPT-USER",
+    "version": "unreleased",
+    "date": "2026-10-04",
+    "source": "Working tree on feature/add-skills at 95e0d0e2. The application was not started.",
+    "branch": "feature/add-skills",
+    "commit": "95e0d0e2fbf749cc71c80010274f3b49157038b2",
+    "readiness": "Source inspection only"
+  },
+  "brand": {
+    "name": "JeffyGPT",
+    "logo": "none"
+  },
+  "overview": [
+    {
+      "type": "paragraph",
+      "text": "JeffyGPT is a local chat page. You type a message, Jeffy replies, and Jeffy can read files from a few configured folders. There is no sign-in. The conversation stays in the browser tab and disappears when you reload."
+    },
+    {
+      "type": "paragraph",
+      "text": "A fresh checkout uses the Fake model, so you can try the chat without an API key. Your messages come back prefixed with Echo:, except for two practice phrases that call a tool. Point the app at an OpenAI-compatible server when you want a real model."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Repository README",
+      "href": "../README.md"
+    },
+    {
+      "label": "Run and build notes",
+      "href": "../.roots/docs/development.md"
+    },
+    {
+      "label": "Tool server notes",
+      "href": "../.roots/docs/jeffymcp.md"
+    }
+  ],
+  "sections": [
+    {
+      "id": "before",
+      "title": "Before you begin",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Use a computer with the .NET SDK 10.0 or later and Node.js 20 or later (npm is included). Clone this repository and work from the repository root. You do not need an account."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Chat page: http://localhost:5173",
+            "API, when you start it yourself: http://localhost:5008",
+            "Aspire dashboard for the http profile: http://localhost:15073"
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "What you should see",
+          "text": "The page title is JeffyGPT. The wordmark reads JeffyGPT. The message box says Scratch at the dirt… and the button says Hunt."
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "title": "Start the chat",
+      "blocks": [
+        {
+          "type": "heading",
+          "text": "Recommended: Aspire"
+        },
+        {
+          "type": "steps",
+          "items": [
+            "From the repository root, run the Aspire AppHost with the http profile.",
+            "Open http://localhost:5173.",
+            "Confirm the Hunt button and the Scratch at the dirt… placeholder."
+          ]
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "dotnet run --project src/JeffyAspire/JeffyAspire.AppHost --launch-profile http"
+        },
+        {
+          "type": "paragraph",
+          "text": "That start path runs the tool server, the API, and the chat page. The dashboard is http://localhost:15073."
+        },
+        {
+          "type": "heading",
+          "text": "Without Aspire"
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Build the solution so the tool server program exists.",
+            "Start the API from the repository root. Leave that window open.",
+            "In a second window, install frontend dependencies once, then start the dev server.",
+            "Open http://localhost:5173."
+          ]
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "dotnet build JeffyGPT.slnx\ndotnet run --project src/JeffyGPT/JeffyGPT.Api"
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "cd src/JeffyGPT/JeffyGPT.Web\nnpm install\nnpm run dev"
+        },
+        {
+          "type": "paragraph",
+          "text": "The chat page sends messages to the API through the dev server. Start the API before you rely on a reply. Check http://localhost:5008/health if you want to confirm the API process. A healthy response reports status ok."
+        }
+      ]
+    },
+    {
+      "id": "send",
+      "title": "Send a message",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Click the message box. Its placeholder is Scratch at the dirt….",
+            "Type a message. Hunt stays unavailable until the text is not only spaces.",
+            "Choose Hunt, or press Enter. Press Shift+Enter to add a line without sending.",
+            "Your message is labeled Upstairs. The reply is labeled Jeffy."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "With the Fake model, a normal message comes back as Echo: followed by your text. The screen shows those role labels in capitals. The line 2 tonight is a fixed decoration, not a count of messages. Words such as hunting or sleeping are also decoration. They do not mean a request is running."
+        },
+        {
+          "type": "callout",
+          "title": "The conversation is not saved",
+          "text": "Reload the page and the transcript is gone. Cancel, while a reply is still arriving, keeps the Upstairs message and drops the unfinished Jeffy text. Cancel does not show an error."
+        },
+        {
+          "type": "paragraph",
+          "text": "Hunt will not send a message longer than 32,000 characters. While a reply is in progress the button changes to Cancel and the box does not accept typing."
+        }
+      ]
+    },
+    {
+      "id": "appearance",
+      "title": "Change appearance",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Find the theme button at the top of the page. It has no word on it.",
+            "In the light theme the button shows a moon and its name is Switch to dark theme. Choose it.",
+            "The page switches to the dark theme. The button shows a sun and its name is Switch to light theme."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "The choice is stored in this browser under the name jeffygpt-theme. Reload the page and the same theme comes back. Another browser, or a cleared site store, starts from your system color scheme."
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "title": "Ask Jeffy to read a file",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Jeffy can look up the time and can list or read files in four folders. You do not pick a tool from a menu. You ask in the message box. While a tool runs, the transcript shows Hunt and the tool name. When it finishes, that row becomes Hunted. Hover or focus Hunted to see which tools ran."
+        },
+        {
+          "type": "heading",
+          "text": "Practice with the Fake model"
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Start the chat with the default Fake model.",
+            "Send read docs overview. Jeffy reads overview.md from the docs folder, then answers.",
+            "Send what time is it. Jeffy uses the clock tool, then answers."
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "The word time triggers the clock",
+          "text": "On the Fake model, any message that contains time calls the clock, unless the message also contains read docs overview. That longer phrase wins and reads the docs overview instead."
+        },
+        {
+          "type": "heading",
+          "text": "Folders Jeffy can read"
+        },
+        {
+          "type": "table",
+          "caption": "Configured document folders",
+          "columns": ["Name to use", "What is there", "Start at"],
+          "rows": [
+            ["docs", "Project documentation", "README.md"],
+            ["conspiracy-theories", "Jeffy's conspiracy notes and investigations", "README.md"],
+            ["netflix", "Jeffy's Netflix queue", "README.md"],
+            ["nfl-rosters", "NFL rosters for the 2026 season", "README.md"]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Ask for a file by that folder name and a path inside it. Reads allow .md, .txt, .json, .cs, .ts, .tsx, and .css files. Jeffy cannot write files or add documents through the chat."
+        },
+        {
+          "type": "paragraph",
+          "text": "With a real model, Jeffy chooses the tool from your question. The same folders apply. After you add or change a tool in the tool server, restart JeffyGPT so the new tool is available. Implementation steps live in the tool server notes linked from Overview."
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "title": "Use another model",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The default provider is Fake. To use OpenAI, or a local server that speaks the same API, switch the provider to OpenAiCompatible and restart the API. The chat page stays at http://localhost:5173. Do not commit a real API key."
+        },
+        {
+          "type": "heading",
+          "text": "OpenAI for one terminal session"
+        },
+        {
+          "type": "steps",
+          "items": [
+            "Stop the API if it is already running.",
+            "In the same terminal session, set the provider and put your key in OPENAI_API_KEY.",
+            "Start the API again from the repository root.",
+            "Send a message that does not contain time. A real model will not prefix the answer with Echo:."
+          ]
+        },
+        {
+          "type": "code",
+          "language": "powershell",
+          "text": "$env:JeffyGPT__Assistant__Provider = \"OpenAiCompatible\"\n$env:OPENAI_API_KEY = \"<your key>\"\ndotnet run --project src/JeffyGPT/JeffyGPT.Api"
+        },
+        {
+          "type": "paragraph",
+          "text": "The Development settings already name model gpt-5.4-nano and the base URL https://api.openai.com/v1. A key is required for that setup. The app checks the key on the first chat request, not when the API process starts. You can instead store the provider and key with dotnet user-secrets on src/JeffyGPT/JeffyGPT.Api, using JeffyGPT:Assistant:Provider and JeffyGPT:Assistant:OpenAiCompatible:ApiKey."
+        },
+        {
+          "type": "heading",
+          "text": "A local OpenAI-compatible server"
+        },
+        {
+          "type": "paragraph",
+          "text": "Use the same provider. Point BaseUrl at your server, set RequireApiKey to false when the server has no key, and set JeffyGPT__Assistant__Provider to OpenAiCompatible. A vLLM server on this machine is typically http://localhost:8000/v1. Start that server before you send a chat. These steps were not run for this guide."
+        }
+      ]
+    },
+    {
+      "id": "tests",
+      "title": "Run the tests",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "From the repository root, dotnet test runs the .NET tests. From src/JeffyGPT/JeffyGPT.Web, npm test runs the frontend tests. A finished run with no failing tests is the success signal. This guide's author did not run them while writing it."
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "dotnet test"
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "cd src/JeffyGPT/JeffyGPT.Web\nnpm test"
+        }
+      ]
+    },
+    {
+      "id": "help",
+      "title": "Get unstuck",
+      "blocks": [
+        {
+          "type": "details",
+          "title": "The page loads but every send fails",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Start the API, or the Aspire AppHost, and leave it running. The chat only talks to /api/chat/stream. The error sits above the message box. The chat service returned an error. Please try again. means the service responded with a failure. Failed to send message often means the browser could not reach it."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "The tool server program is missing",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Build the solution, then start again. The API looks for JeffyMCP.dll under src/JeffyMCP/bin/Debug/net10.0 when it launches the tool server itself. A required server that cannot connect reports Required MCP server 'jeffymcp' failed to connect."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "A real model says an API key is required",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Set OPENAI_API_KEY, or JeffyGPT:Assistant:OpenAiCompatible:ApiKey, and send the message again. The failure appears on that send. Startup can still look healthy."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "The reply stopped after many tool calls",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Jeffy stops after 40 tool rounds and says so in the reply. Send a narrower question instead of repeating the same broad one."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "Hunt does nothing",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "The button stays off when the box is empty or only spaces, while a reply is already running, or when the message is over 32,000 characters. Wait until Cancel returns to Hunt, or shorten the message."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

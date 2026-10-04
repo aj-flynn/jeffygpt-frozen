@@ -1,0 +1,88 @@
+---
+description: JeffyGPT visual branding for web UI
+globs: src/JeffyGPT/JeffyGPT.Web/**
+alwaysApply: false
+---
+# JeffyGPT Branding (Agent Rule)
+
+When adding or changing user-facing UI, copy, or styles, follow these rules.
+
+## Product identity
+
+- Product name: **JeffyGPT** (capital J, capital GPT). Never `jeffygpt`, `Jeffy Gpt`, or `JEFFYGPT` in UI.
+- Visual concept: Look 07 Take den — soil/parchment surfaces, rust accents, hard 2px borders, IBM Plex Sans wordmark, IBM Plex Mono labels
+- Chrome labels: user **Upstairs**, assistant **Jeffy**, send **Hunt**
+- Tool rounds: in-transcript **Hunt** box while tools run, then **Hunted** label (hover/focus lists the tools that ran)
+- Idle chrome status is flavor text from `idleHuntStatus.ts`, not a live request indicator
+
+## Logo (do not modify)
+
+- Official asset: `src/JeffyGPT/JeffyGPT.Web/src/assets/brand/jeffygpt-icon.svg`
+- Mark: a sharp den tile — parchment floorboards, a soil crawlspace gap, two gleam eyes looking up, and a rust baseboard.
+- **Never** recreate, redesign, rasterize, inline-edit, or overwrite this SVG.
+- **Never** duplicate logo markup in components; import the file or use `JeffyGptLogo`.
+- Favicon: keep `public/favicon.svg` in sync by copying from the official asset — do not edit the source SVG for favicon tweaks.
+- App chrome uses the wordmark without the icon (`showWordmark` + `showIcon={false}`).
+
+```tsx
+// GOOD — reuse the brand component
+import { JeffyGptLogo } from './components/brand/JeffyGptLogo';
+<JeffyGptLogo showWordmark showIcon={false} />
+
+// BAD — inline SVG, new logo file, or a plain heading
+<h1>JeffyGPT</h1>
+```
+
+## Required UI building blocks
+
+| Concern | Use |
+|---------|-----|
+| App chrome | `AppShell` (soil page + centered den) + `DenChrome` |
+| Logo + wordmark | `JeffyGptLogo` |
+| Theme switching | `ThemeProvider`, `useTheme`, `ThemeToggle` |
+| Theme persistence | `localStorage` key `jeffygpt-theme` |
+
+New pages should render inside `AppShell` unless there is a strong reason not to.
+
+## Colors and themes
+
+Define colors with CSS variables from `src/JeffyGPT/JeffyGPT.Web/src/index.css`. Themes are set via `data-theme="light"` or `data-theme="dark"` on `<html>`.
+
+Light is a parchment den; dark is the soil den from look 07 Take. Both keep rust/nest accents.
+
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
+| `--soil` | `#efe6d4` | `#0c0a08` | Page background |
+| `--tunnel` | `#f7f1e4` | `#17130f` | Den surface |
+| `--joist` | `#e4d8c4` | `#2a2219` | Chrome bar |
+| `--bone` | `#1c1610` | `#e6dccb` | Body text |
+| `--bone-dim` | `#5c5348` | `#a89f8f` | Muted text |
+| `--nest` / `--rust` | `#c75c3e` | `#c75c3e` | Accent, Hunt button, GPT wordmark |
+| `--gleam` | `#8a6a20` | `#f0c878` | Assistant labels, status, cursor |
+| `--whisker` | `#5c5348` | `#6e675e` | Meta labels, dashed hunt box |
+| `--surface` | `var(--soil)` | `var(--soil)` | Page |
+| `--surface-elevated` | `var(--tunnel)` | `var(--tunnel)` | Den |
+| `--text-primary` | `var(--bone)` | `var(--bone)` | Body |
+| `--focus-ring` | `var(--nest)` | `var(--nest)` | Focus outlines |
+
+```css
+/* GOOD */
+.card { background: var(--surface-elevated); color: var(--text-primary); }
+
+/* BAD — hard-coded colors that break theme switching */
+.card { background: #fff; color: #111827; }
+```
+
+- Use den tokens, not one-off light/dark overrides.
+- Do not remove or bypass `ThemeProvider` when adding global styles.
+- Fonts: IBM Plex Sans (`--sans` / `--heading`), IBM Plex Mono (`--mono`).
+
+## Agent checklist
+
+Before finishing branding-related work:
+
+1. Wordmark via `JeffyGptLogo`, source SVG untouched
+2. New surfaces use `--surface*` / `--text-*` / den tokens
+3. Wordmark uses **Jeffy** + rust **GPT** (not a single flat color)
+4. Both parchment (light) and soil (dark) themes checked
+5. Page title and meta remain `JeffyGPT` in `index.html`

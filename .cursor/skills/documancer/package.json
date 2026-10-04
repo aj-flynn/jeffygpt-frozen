@@ -1,0 +1,26 @@
+{
+  "name": "@flynn-technology/documancer-cursor",
+  "version": "1.4.0",
+  "private": true,
+  "description": "Documancer for Cursor: portable technical guides, user documentation and UAT plans",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test scripts/*.test.mjs",
+    "examples": "node scripts/render.mjs --set examples/set.json dist"
+  },
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "INSTALL.md",
+    "USAGE.md",
+    "install.mjs",
+    "references/",
+    "assets/",
+    "examples/",
+    "subagents/",
+    "scripts/"
+  ]
+}

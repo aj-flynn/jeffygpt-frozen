@@ -1,0 +1,24 @@
+---
+description: React and TypeScript frontend conventions for JeffyGPT
+globs: src/JeffyGPT/JeffyGPT.Web/**
+alwaysApply: false
+---
+
+# Frontend Rules
+
+- Use React with TypeScript.
+- Prefer functional components.
+- Keep API calls in `src/api/` — not inside components.
+- Avoid putting business rules directly inside components.
+- Put boolean domain rules in `src/api/` or `src/theme/` as named exported functions; components call predicates instead of embedding multi-clause conditions.
+- Keep components small and focused.
+- Use explicit types for API responses (see `chatTypes.ts`).
+- Do not introduce global state unless local state is insufficient.
+
+## UI structure
+
+- App chrome: `AppShell` + `DenChrome` + `JeffyGptLogo` + `ThemeToggle`
+- Chat UI: `ChatPanel` (assembler), `ChatTranscript`, `ChatComposer`, `EmptyChatPanel`
+- Theme: `ThemeProvider` / `useTheme`; persist with `jeffygpt-theme` in localStorage
+
+For colors, logo, and wordmark rules, see `branding.mdc`.

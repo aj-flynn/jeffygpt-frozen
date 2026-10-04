@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <UserSecretsId>jeffygpt-api-dev</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JeffyGPT.Application\JeffyGPT.Application.csproj" />
+    <ProjectReference Include="..\JeffyGPT.Contracts\JeffyGPT.Contracts.csproj" />
+    <ProjectReference Include="..\JeffyGPT.Infrastructure\JeffyGPT.Infrastructure.csproj" />
+    <!-- Build JeffyMCP with the API so the stdio MCP DLL is available at startup -->
+    <ProjectReference Include="..\..\JeffyMCP\JeffyMCP.csproj" ReferenceOutputAssembly="false">
+      <IsAspireProjectResource>false</IsAspireProjectResource>
+    </ProjectReference>
+    <ProjectReference Include="..\..\JeffyAspire\JeffyAspire.ServiceDefaults\JeffyAspire.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,117 @@
+## .NET — https://github.com/github/gitignore/blob/main/Dotnet.gitignore
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet Packages
+*.nupkg
+*.snupkg
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Test coverage
+CodeCoverage/
+coverage/
+*.coverage
+*.coveragexml
+
+# Visual Studio / MSBuild user files
+.vs/
+*.user
+*.userosscache
+*.suo
+*.rsuser
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+## Frontend (JeffyGPT.Web — Vite + React)
+
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+## Environment and local secrets
+
+.env
+.env.*
+!.env.example
+
+# Local config overrides (use env vars or user secrets for API keys)
+**/appsettings.*.local.json
+**/secrets.json
+
+# Aspire local debug marker (written by VS Code/Cursor preLaunchTask)
+src/JeffyAspire/JeffyAspire.AppHost/.run-assistant-provider
+
+# Certificates and keys
+*.pfx
+*.p12
+*.key
+*.pem
+
+## OS
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Local doc/export artifacts (do not commit)
+.userdocs.zip
+*.userdocs.zip
+src/JeffyMCP.zip
+
+## Local agent skill scratch (do not commit)
+.impeccable/
+.audit/
+.tmp-critique/
+
+## Editor
+
+# Root .vscode/ is committed for shared launch tasks and debug configs.
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Misc temp files
+~$*
+*~
+.tmp.driveupload
+
+# Engineering session state
+.scratch/

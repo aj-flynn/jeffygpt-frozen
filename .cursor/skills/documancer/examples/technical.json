@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "mode": "technical",
+  "title": "Documentation reader reference",
+  "lead": "Architecture and behavior of the portable Documancer reader.",
+  "identity": {
+    "id": "DOCUMANCER-TECH",
+    "version": "1.0",
+    "date": "2026-09-19",
+    "source": "documancer package 1.4.0"
+  },
+  "overview": [
+    {
+      "type": "paragraph",
+      "text": "The reader displays technical references, user guides and acceptance plans through one static HTML shell. This example documents the package itself. No backend, account or API is required."
+    }
+  ],
+  "sections": [
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The renderer validates structured JSON, escapes content, and embeds the shared CSS, JavaScript, wordmarks and licensed font into a single HTML file. Content is present in the HTML; JavaScript adds navigation and interactive controls."
+        },
+        {
+          "type": "table",
+          "caption": "Package components",
+          "columns": [
+            "Component",
+            "Responsibility"
+          ],
+          "rows": [
+            [
+              "references/",
+              "Audience-specific authoring instructions and data contract"
+            ],
+            [
+              "scripts/render.mjs",
+              "Validation and deterministic HTML rendering"
+            ],
+            [
+              "assets/",
+              "Shared presentation, browser behavior and licensed font"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "title": "Local setup",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Use Node.js 20 or later. From the installed skill directory, render the included technical source. The renderer does not need npm dependencies or network access."
+        },
+        {
+          "type": "code",
+          "language": "Shell",
+          "text": "node scripts/render.mjs examples/technical.json dist/technical.html"
+        },
+        {
+          "type": "paragraph",
+          "text": "Open dist/technical.html in a browser. Generate companion examples beside it to make the header links available."
+        }
+      ]
+    },
+    {
+      "id": "theme",
+      "title": "Theme resolution",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The flynn-docs-theme storage key accepts system, dark and light. A valid saved explicit choice wins; System follows the browser preference. Dark is the fallback when no light preference is available. If storage is blocked, the current session remains usable."
+        },
+        {
+          "type": "code",
+          "language": "JSON",
+          "text": "{\n  \"brand\": { \"name\": \"Example project\", \"logo\": \"none\" }\n}"
+        },
+        {
+          "type": "callout",
+          "title": "Publisher identity",
+          "text": "For another publisher, configure its real name. The Flynn wordmark is used by default only for Flynn Technology LLC."
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "title": "Acceptance results",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Each human test starts Untested. Passed, Failed, Skipped and Blocked are the other available choices. Notes are independent of result selection. Automated evidence remains read-only and does not increase human acceptance counts."
+        },
+        {
+          "type": "paragraph",
+          "text": "Generate summary reads current values and attempts one clipboard write. If copying fails, the text remains visible and selected. Subsequent changes mark the generated summary stale. Results and notes reset on reload."
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "title": "Troubleshooting",
+      "blocks": [
+        {
+          "type": "details",
+          "title": "A document cannot be rendered",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Read the CLI error, which identifies the invalid field. Correct the JSON source and render again. Invalid data does not replace the existing output."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "The clipboard is blocked",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "The reader keeps the text selected. Use Ctrl+C or Command+C. Browser permissions may differ between local files and HTTP previews."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --soil: #efe6d4;
+  --tunnel: #f7f1e4;
+  --joist: #e4d8c4;
+  --bone: #1c1610;
+  --bone-dim: #5c5348;
+  --nest: #c75c3e;
+  --nest-deep: #9c3c28;
+  --rust: #c75c3e;
+  --whisker: #5c5348;
+  --gleam: #8a6a20;
+  --den-edge: #c4b49a;
+  --message-fill: #f3ead8;
+  --composer-fill: #eadfcb;
+  --den-inset: inset 0 0 80px rgba(92, 70, 40, 0.12);
+  --page-glow:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(139, 90, 50, 0.18), transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(181, 74, 50, 0.1), transparent 35%);
+
+  --surface: var(--soil);
+  --surface-elevated: var(--tunnel);
+  --surface-muted: var(--joist);
+  --text-primary: var(--bone);
+  --text-secondary: var(--bone-dim);
+  --text-heading: var(--bone);
+  --border: var(--den-edge);
+  --code-bg: #e8dcc6;
+  --error: var(--nest-deep);
+
+  --jgpt-wordmark-jeffy: var(--bone);
+  --jgpt-wordmark-gpt: var(--nest);
+  --jgpt-white: var(--bone);
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --soil: #0c0a08;
+  --tunnel: #17130f;
+  --joist: #2a2219;
+  --bone: #e6dccb;
+  --bone-dim: #a89f8f;
+  --nest: #c75c3e;
+  --nest-deep: #9c3c28;
+  --rust: #c75c3e;
+  --whisker: #6e675e;
+  --gleam: #f0c878;
+  --den-edge: #2e261c;
+  --message-fill: #14110d;
+  --composer-fill: #100d0a;
+  --den-inset: inset 0 0 80px rgba(0, 0, 0, 0.45);
+  --page-glow:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(61, 74, 58, 0.25), transparent 55%),
+    radial-gradient(circle at 20% 80%, rgba(181, 74, 50, 0.08), transparent 35%);
+
+  --surface: var(--soil);
+  --surface-elevated: var(--tunnel);
+  --surface-muted: var(--joist);
+  --text-primary: var(--bone);
+  --text-secondary: var(--bone-dim);
+  --text-heading: var(--bone);
+  --border: var(--den-edge);
+  --code-bg: #1a1612;
+  --error: #e07058;
+
+  --jgpt-wordmark-jeffy: var(--bone);
+  --jgpt-wordmark-gpt: var(--nest);
+  --jgpt-white: var(--bone);
+}
+
+:root {
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --heading: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --focus-ring: var(--nest);
+  --focus-ring-offset: 0.125rem;
+  --focus-ring-glow: 0 0 0 0.1875rem color-mix(in srgb, var(--nest) 28%, transparent);
+
+  font: 1.125rem/1.45 var(--sans);
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+  background: var(--surface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 64rem) {
+    font-size: 1rem;
+  }
+}
+
+#root {
+  height: 100svh;
+  min-height: 100svh;
+}
+
+body {
+  margin: 0;
+  background: var(--page-glow), var(--surface);
+  color: var(--text-primary);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--rust) 42%, transparent);
+  color: var(--text-primary);
+}
+
+:focus-visible {
+  outline: 0.125rem solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+p {
+  margin: 0;
+}

@@ -1,0 +1,120 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "JeffyAspire (Fake)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "aspire-mark-fake",
+      "postDebugTask": "aspire-clear-assistant-provider",
+      "program": "${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/bin/Debug/net10.0/JeffyAspire.AppHost.dll",
+      "launchSettingsProfile": "http",
+      "cwd": "${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:15073",
+        "DOTNET_LAUNCH_PROFILE": "http",
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true",
+        "ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS": "true",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19082",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20019"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+http://localhost:15073",
+        "uriFormat": "http://localhost:15073"
+      }
+    },
+    {
+      "name": "JeffyAspire (OpenAI Compatible)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "aspire-mark-openai",
+      "postDebugTask": "aspire-clear-assistant-provider",
+      "program": "${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost/bin/Debug/net10.0/JeffyAspire.AppHost.dll",
+      "launchSettingsProfile": "http-openai",
+      "cwd": "${workspaceFolder}/src/JeffyAspire/JeffyAspire.AppHost",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:15073",
+        "DOTNET_LAUNCH_PROFILE": "http-openai",
+        "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true",
+        "ASPIRE_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS": "true",
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:19082",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:20019",
+        "JeffyGPT__Assistant__Provider": "OpenAiCompatible"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Dashboard:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "JeffyGPT.Api (Fake, without Aspire)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/src/JeffyGPT/JeffyGPT.Api/bin/Debug/net10.0/JeffyGPT.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/JeffyGPT/JeffyGPT.Api",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "suppressJITOptimizations": true,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5008",
+        "DOTNET_LAUNCH_PROFILE": "http"
+      }
+    },
+    {
+      "name": "JeffyGPT.Api (OpenAI Compatible, without Aspire)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-api",
+      "program": "${workspaceFolder}/src/JeffyGPT/JeffyGPT.Api/bin/Debug/net10.0/JeffyGPT.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/JeffyGPT/JeffyGPT.Api",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "suppressJITOptimizations": true,
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5008",
+        "DOTNET_LAUNCH_PROFILE": "http-openai",
+        "JeffyGPT__Assistant__Provider": "OpenAiCompatible"
+      }
+    },
+    {
+      "name": "JeffyGPT.Api.Tests",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "dotnet",
+      "args": [
+        "test",
+        "${workspaceFolder}/tests/JeffyGPT/JeffyGPT.Api.Tests/JeffyGPT.Api.Tests.csproj",
+        "--no-build"
+      ],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "env": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": "Attach to .NET Process",
+      "type": "coreclr",
+      "request": "attach"
+    }
+  ]
+}

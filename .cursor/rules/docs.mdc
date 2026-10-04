@@ -1,0 +1,13 @@
+---
+description: Significant behavior changes go to Documancer through the stop hook
+alwaysApply: true
+---
+
+# Documentation
+
+Do not write documentation during the main task. The stop hook (`.cursor/hooks/ensure-docs.py`) sends one Documancer follow-up when a turn changes product behavior.
+
+- Code behavior (APIs, services, contracts, configuration, MCP): `.userdocs/technical.json` and `.userdocs/technical.html`
+- App behavior (UI, routes, user-visible flow): `.userdocs/user-guide.json` and `.userdocs/user-guide.html`
+
+That follow-up reads `.cursor/skills/documancer/SKILL.md`, edits the JSON and HTML named above, and stops when the diff did not change behavior. Leave every other file under `.roots/docs/` and `.userdocs/` unchanged unless the user asks to edit it.

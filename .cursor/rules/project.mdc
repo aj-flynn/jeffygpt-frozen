@@ -1,0 +1,68 @@
+---
+description: JeffyGPT core scope, workflow, and project guardrails
+alwaysApply: true
+---
+
+# Project Rules
+
+## Scope
+
+This project is a browser-based chat application for interacting with local or hosted LLMs.
+
+The initial stack is:
+
+- Backend: ASP.NET Core Web API
+- Frontend: React + TypeScript
+- LLM runtime: vLLM-compatible OpenAI-style API
+- Future clients may include Android and iOS, so keep backend APIs client-neutral.
+
+## General Development Rules
+
+- Make small, focused changes.
+- Do not introduce large frameworks without asking.
+- Prefer simple, explicit code over clever abstractions.
+- Encapsulate conditionals in named predicate/helper functions when a boolean expression encodes domain, security, or protocol rules; name for intent (for example `isValidInsertion`, `ContainsAbsolutePathSyntax`), and extract when duplicated or when a direct unit test would clarify behavior.
+- Do not rewrite unrelated files.
+- Preserve existing naming and folder conventions once established.
+- Before changing architecture, explain the tradeoff briefly.
+- When adding a feature, update or add tests where practical.
+- Leave documentation to the stop hook. It requests Documancer when product behavior changes (see `docs.mdc`).
+- Do not add fake TODOs, placeholder services, or mock implementations unless requested.
+
+## Agent Workflow
+
+Before coding:
+
+1. Restate the specific task.
+2. Identify files that will likely change.
+3. Make the smallest useful change.
+4. Run relevant tests or explain why they were not run.
+5. Leave documentation to the stop hook (see `docs.mdc`).
+6. Summarize what changed.
+
+When uncertain:
+
+- Do not guess architecture.
+- Ask one focused question.
+- If the decision is low-risk, choose the simpler option and document the assumption.
+
+## Do Not Do
+
+- Do not add authentication yet unless explicitly requested.
+- Do not add Semantic Kernel unless explicitly requested.
+- Do not add LangChain-style orchestration unless explicitly requested.
+- Do not add a database until persistence is needed.
+- Do not create mobile projects yet.
+- Do not build a plugin marketplace yet.
+- Do not optimize for multi-tenant SaaS until requested.
+- Do not create broad abstractions before there are at least two real implementations.
+
+## Related rules
+
+- Backend: `backend.mdc`
+- Frontend: `frontend.mdc`
+- Tool calling: `tool-calling.mdc`
+- Security: `security.mdc`
+- Testing: `testing.mdc`
+- Branding: `branding.mdc`
+- Documentation: `docs.mdc`

@@ -1,0 +1,6 @@
+{
+  "documents": [
+    { "source": "technical.json", "output": "technical.html" },
+    { "source": "user-guide.json", "output": "user-guide.html" }
+  ]
+}

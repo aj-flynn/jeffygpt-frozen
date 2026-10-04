@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <title>Hunted hover check</title>
+    <link rel="stylesheet" href="src/index.css" />
+    <link rel="stylesheet" href="src/components/chat/ChatTranscript.css" />
+    <style>
+      body {
+        width: 640px;
+        margin: 0 auto;
+        min-height: 100vh;
+      }
+      .chat-panel__messages {
+        height: 520px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chat-panel__messages">
+      <article class="chat-panel__message chat-panel__message--user">
+        <span class="chat-panel__role">Upstairs</span>
+        <div class="chat-panel__content">What roots can you read?</div>
+      </article>
+      <article class="chat-panel__message chat-panel__message--hunt" id="hunt-round-1">
+        <span class="chat-panel__hunt-label">
+          <span class="chat-panel__role chat-panel__hunt-trigger" tabindex="0" id="trigger-1">Hunted</span>
+          <ul class="chat-panel__hunt-tooltip" id="tooltip-1">
+            <li>list-document-roots</li>
+          </ul>
+        </span>
+      </article>
+      <article class="chat-panel__message chat-panel__message--assistant">
+        <span class="chat-panel__role">Jeffy</span>
+        <div class="chat-panel__content">I cached the roots I can read.</div>
+      </article>
+      <article class="chat-panel__message chat-panel__message--user">
+        <span class="chat-panel__role">Upstairs</span>
+        <div class="chat-panel__content">Read the microwave note.</div>
+      </article>
+      <article class="chat-panel__message chat-panel__message--hunt" id="hunt-round-2">
+        <span class="chat-panel__hunt-label">
+          <span class="chat-panel__role chat-panel__hunt-trigger" tabindex="0" id="trigger-2">Hunted</span>
+          <ul class="chat-panel__hunt-tooltip" id="tooltip-2">
+            <li>read-file</li>
+            <li>search-files</li>
+          </ul>
+        </span>
+      </article>
+      <article class="chat-panel__message chat-panel__message--assistant" id="reply-2">
+        <span class="chat-panel__role">Jeffy</span>
+        <div class="chat-panel__content">The clock is counting crumbs, not minutes.</div>
+      </article>
+    </div>
+  </body>
+</html>

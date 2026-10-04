@@ -1,0 +1,29 @@
+---
+description: Testing conventions for JeffyGPT
+globs: tests/**
+alwaysApply: false
+---
+
+# Testing Rules
+
+- Add unit tests for services and tools.
+- JeffyMCP tool tests live under `tests/JeffyMCP/JeffyMCP.Tests/` (mirror `src/JeffyMCP/`).
+- JeffyGPT MCP client / executor tests live under `tests/JeffyGPT/JeffyGPT.Application.Tests/Tools/`.
+- When adding a JeffyMCP tool, follow the checklist in `tool-calling.mdc` (JeffyMCP unit test; optional executor/orchestrator coverage when chat flow changes).
+- Prefer integration tests for API endpoints.
+- Use test names that describe behavior (`Method_Scenario_Expected`).
+- Application.Tests folders: `Chat/` (orchestrator, validators, stream events), `Infrastructure/` (OpenAI client, DI), `Tools/` (executor/MCP/policy), one `TestDoubles/` at the project root.
+- Do not depend on a live LLM in normal automated tests.
+- Mock or fake the LLM client behind `IAssistantClient`.
+- API tests should not spawn a real MCP subprocess — use `TestMcpToolBootstrapper` / disable configured servers (see `JeffyGPTWebApplicationFactory`).
+- Frontend predicate tests live beside the module under `JeffyGPT.Web/src/` and run with `npm test` (Vitest).
+
+## Test projects
+
+| Project | Focus |
+|---------|-------|
+| `JeffyGPT.Application.Tests` | Orchestrator, validators, tool executor, MCP catalog doubles |
+| `JeffyGPT.Api.Tests` | HTTP endpoints via `WebApplicationFactory<Program>` |
+| `JeffyMCP.Tests` | JeffyMCP tools + FileSystemSandbox |
+
+Run from repo root: `dotnet test`

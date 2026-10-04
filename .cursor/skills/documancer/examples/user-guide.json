@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "mode": "user-guide",
+  "title": "Using your documentation",
+  "lead": "Find answers, choose a comfortable appearance, and record acceptance results.",
+  "identity": {
+    "id": "DOCUMANCER-USER",
+    "version": "1.0",
+    "date": "2026-09-19",
+    "source": "documancer package 1.4.0"
+  },
+  "overview": [
+    {
+      "type": "paragraph",
+      "text": "Technical documents explain how a system works. User guides help you complete a task. Acceptance plans let you record what happened when you tested a change. All three use the same reader."
+    }
+  ],
+  "sections": [
+    {
+      "id": "before",
+      "title": "Before you begin",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Open the HTML document in a browser. These examples need no sign-in. Keep an acceptance plan open until you have generated and retained its summary: results and notes are not retained on reload."
+        }
+      ]
+    },
+    {
+      "id": "find",
+      "title": "Find a topic",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Use the document menu on the left. On a narrow screen, open Browse documentation near the top.",
+            "Enter a word in Find in this document to narrow the menu.",
+            "Choose a matching topic to jump to it. Press Escape in the search field to clear your search."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "The selected topic appears in the reading area. Search filters the menu; it does not remove document content."
+        }
+      ]
+    },
+    {
+      "id": "appearance",
+      "title": "Choose your appearance",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Find Appearance at the bottom of the document menu.",
+            "Choose Dark for forest colors, Light for cream colors, or System to follow your device."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Your choice is remembered in this browser when storage is available. It can apply to other Documancer documents on the same origin."
+        }
+      ]
+    },
+    {
+      "id": "record",
+      "title": "Record a test result",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Read the acceptance plan's Overview and complete Shared setup.",
+            "Read each test's prerequisites. Follow its test plan and compare what you see with Pass when.",
+            "Choose Passed, Failed, Skipped, Blocked or Untested. Add notes about your observations; you may write them before choosing a result."
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "Record what happened",
+          "text": "Passed means you accept that journey. Blocked means something prevented execution. Skipped and Untested do not count as accepted."
+        }
+      ]
+    },
+    {
+      "id": "sharing",
+      "title": "Share the summary",
+      "blocks": [
+        {
+          "type": "steps",
+          "items": [
+            "Go to the plan's final Summary section.",
+            "Select Generate summary. It generates the text and copies it in one action.",
+            "Check the confirmation, then paste the result into your task or message. If copying is blocked, copy the selected text using Ctrl+C or Command+C.",
+            "If you change a result or note afterward, generate the summary again before sharing."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "help",
+      "title": "Get unstuck",
+      "blocks": [
+        {
+          "type": "details",
+          "title": "My search has no matches",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Try a shorter word or press Escape in the search field to restore the full menu."
+            }
+          ]
+        },
+        {
+          "type": "details",
+          "title": "My test results disappeared",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Reloading resets the plan. Record your observations again, then generate and retain the summary before closing the page."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
