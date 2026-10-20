@@ -25,7 +25,7 @@ A single message in the conversation. Optional fields support replaying tool rou
 
 | Property | Description |
 |----------|-------------|
-| `role` | Message role. Client requests may only send `user` / `assistant`; `tool` is used server-side within a turn |
+| `role` | Server-built message role: `user`, `assistant`, `system`, or `tool` |
 | `content` | Text content or tool result JSON |
 | `toolCalls` | Present on assistant messages that invoked tools |
 | `toolCallId` | Present on `tool` role messages; links to the originating call |
@@ -116,18 +116,19 @@ A single message in the conversation. Optional fields support replaying tool rou
 }
 ```
 
-### ChatRequest
+### ChatTurnRequest
 
 ```csharp
-public sealed record ChatRequest(IReadOnlyList<ChatMessageDto> Messages);
+public sealed record ChatTurnRequest(string? ConversationId, string? Content);
 ```
 
-Request body for `POST /api/chat` and `POST /api/chat/stream`. Contains the full conversation history the client wants the backend to process.
+Request body for `POST /api/chat` and `POST /api/chat/stream`. Contains only new user text and an optional conversation id. Omit or leave the id blank to start a conversation. The server stores the transcript in memory. Streaming responses return the id in `X-Conversation-Id`; sync responses include `conversationId` in the JSON body.
 
 ### ChatResponse
 
 ```csharp
 public sealed record ChatResponse(
+    string ConversationId,
     ChatMessageDto AssistantMessage,
     IReadOnlyList<ToolCallDto> ToolCalls,
     IReadOnlyList<ToolResultDto> ToolResults);
@@ -137,6 +138,7 @@ Response from `POST /api/chat`.
 
 | Property | Description |
 |----------|-------------|
+| `conversationId` | Id to send with the next user message |
 | `assistantMessage` | The assistant's text reply |
 | `toolCalls` | Tool invocations requested by the assistant (may be empty) |
 | `toolResults` | Results from executing those tool calls (may be empty) |

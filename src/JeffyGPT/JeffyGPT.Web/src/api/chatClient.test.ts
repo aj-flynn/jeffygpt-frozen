@@ -1,12 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { streamChat } from './chatClient';
-import type { ChatRequest, ChatStreamEvent } from './chatTypes';
+import { ChatHttpError, conversationIdHeader, streamChat } from './chatClient';
+import type { ChatStreamEvent } from './chatTypes';
 
-const request: ChatRequest = {
-  messages: [{ role: 'user', content: 'hello' }],
-};
-
-function ndjsonResponse(chunks: string[]): Response {
+function ndjsonResponse(chunks: string[], conversationId = 'conv-1'): Response {
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
@@ -17,7 +13,10 @@ function ndjsonResponse(chunks: string[]): Response {
     },
   });
 
-  return new Response(stream, { status: 200 });
+  return new Response(stream, {
+    status: 200,
+    headers: { [conversationIdHeader]: conversationId },
+  });
 }
 
 describe('streamChat', () => {
@@ -25,7 +24,7 @@ describe('streamChat', () => {
     vi.unstubAllGlobals();
   });
 
-  it('reads ndjson, skips a blank line, and ignores anything after done', async () => {
+  it('posts the new text, reads ndjson, and returns the conversation id', async () => {
     const signal = new AbortController().signal;
     const events: ChatStreamEvent[] = [];
     const fetchMock = vi.fn(async () =>
@@ -36,10 +35,13 @@ describe('streamChat', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    await streamChat(request, {
-      signal,
-      onEvent: (event) => events.push(event),
-    });
+    const conversationId = await streamChat(
+      { content: 'hello', conversationId: 'conv-1' },
+      {
+        signal,
+        onEvent: (event) => events.push(event),
+      },
+    );
 
     expect(fetchMock).toHaveBeenCalledWith('/api/chat/stream', {
       method: 'POST',
@@ -47,19 +49,22 @@ describe('streamChat', () => {
         'Content-Type': 'application/json',
         Accept: 'application/x-ndjson',
       },
-      body: JSON.stringify(request),
+      body: JSON.stringify({ content: 'hello', conversationId: 'conv-1' }),
       signal,
     });
+    expect(conversationId).toBe('conv-1');
     expect(events).toEqual([{ type: 'assistant_delta', content: 'Hi' }, { type: 'done' }]);
   });
 
-  it('throws the server error message', async () => {
+  it('throws the server error message with the status', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ error: 'Jeffy is busy.' }), { status: 503 })),
     );
 
-    await expect(streamChat(request, { onEvent: () => {} })).rejects.toThrow('Jeffy is busy.');
+    await expect(streamChat({ content: 'hello' }, { onEvent: () => {} })).rejects.toEqual(
+      expect.objectContaining({ message: 'Jeffy is busy.', status: 503 }),
+    );
   });
 
   it('throws the status when the error body is not JSON', async () => {
@@ -68,18 +73,41 @@ describe('streamChat', () => {
       vi.fn(async () => new Response('nope', { status: 502 })),
     );
 
-    await expect(streamChat(request, { onEvent: () => {} })).rejects.toThrow(
-      'Chat stream failed: 502',
+    const error = await streamChat({ content: 'hello' }, { onEvent: () => {} }).catch(
+      (err: unknown) => err,
+    );
+
+    expect(error).toBeInstanceOf(ChatHttpError);
+    expect((error as ChatHttpError).message).toBe('Chat stream failed: 502');
+    expect((error as ChatHttpError).status).toBe(502);
+  });
+
+  it('rejects a response that has no conversation id', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{"type":"done"}\n', { status: 200 })),
+    );
+
+    await expect(streamChat({ content: 'hello' }, { onEvent: () => {} })).rejects.toThrow(
+      /conversation id/i,
     );
   });
 
   it('rejects a response that has no body', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => ({ ok: true, status: 200, body: null }) as Response),
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            body: null,
+            headers: new Headers({ [conversationIdHeader]: 'conv-1' }),
+          }) as Response,
+      ),
     );
 
-    await expect(streamChat(request, { onEvent: () => {} })).rejects.toThrow(
+    await expect(streamChat({ content: 'hello' }, { onEvent: () => {} })).rejects.toThrow(
       /did not include a body/i,
     );
   });
@@ -90,6 +118,8 @@ describe('streamChat', () => {
       vi.fn(async () => ndjsonResponse(['{"type":"assistant_delta","content":"Hi"}\n'])),
     );
 
-    await expect(streamChat(request, { onEvent: () => {} })).rejects.toThrow(/ended unexpectedly/i);
+    await expect(streamChat({ content: 'hello' }, { onEvent: () => {} })).rejects.toThrow(
+      /ended unexpectedly/i,
+    );
   });
 });

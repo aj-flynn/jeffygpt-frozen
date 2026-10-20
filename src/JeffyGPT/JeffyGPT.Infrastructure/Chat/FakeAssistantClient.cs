@@ -44,10 +44,12 @@ public class FakeAssistantClient : IAssistantClient
 
     private static AssistantCompletion BuildCompletion(IReadOnlyList<ChatMessageDto> messages)
     {
-        var toolMessage = FindLastMessageByRole(messages, "tool");
+        var lastUserIndex = FindLastIndexByRole(messages, "user");
+        var lastToolIndex = FindLastIndexByRole(messages, "tool");
 
-        if (toolMessage is not null)
+        if (lastToolIndex > lastUserIndex)
         {
+            var toolMessage = messages[lastToolIndex];
             try
             {
                 using var document = JsonDocument.Parse(toolMessage.Content);
@@ -71,8 +73,7 @@ public class FakeAssistantClient : IAssistantClient
             }
         }
 
-        var lastUserMessage = messages.Last(message =>
-            string.Equals(message.Role, "user", StringComparison.OrdinalIgnoreCase));
+        var lastUserMessage = messages[lastUserIndex];
 
         if (TryBuildFakeToolCallCompletion(lastUserMessage.Content, out var toolCallCompletion))
         {
@@ -83,9 +84,18 @@ public class FakeAssistantClient : IAssistantClient
         return new AssistantCompletion(assistantMessage, []);
     }
 
-    private static ChatMessageDto? FindLastMessageByRole(IReadOnlyList<ChatMessageDto> messages, string role) =>
-        messages.LastOrDefault(message =>
-            string.Equals(message.Role, role, StringComparison.OrdinalIgnoreCase));
+    private static int FindLastIndexByRole(IReadOnlyList<ChatMessageDto> messages, string role)
+    {
+        for (var index = messages.Count - 1; index >= 0; index--)
+        {
+            if (string.Equals(messages[index].Role, role, StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
 
     private static bool TryBuildFakeToolCallCompletion(string userContent, out AssistantCompletion completion)
     {

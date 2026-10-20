@@ -390,21 +390,6 @@ Start vLLM (or your server) before the API. Confirm tool-calling support on your
 
 `JeffyGPT.Web` is listed in `JeffyGPT.slnx` as a solution folder pointing at `package.json`. It is managed independently via npm. `dotnet build` does not build the React app.
 
-## Agent / Cursor rules
+## Agent instructions
 
-| File | Purpose |
-|------|---------|
-| `.cursor/rules/project.mdc` | Architecture, security, tool-calling conventions |
-| `.cursor/rules/branding.mdc` | UI branding and theme token requirements |
-| `.cursor/rules/docs.mdc` | Stop hook sends significant behavior changes to Documancer |
-
-### Project hooks
-
-Project hooks live in [`.cursor/hooks.json`](../../.cursor/hooks.json). [`.cursor/hooks/ensure-docs.py`](../../.cursor/hooks/ensure-docs.py) gates Documancer so a documentation turn runs only after a nontrivial product edit.
-
-- `afterFileEdit` runs `python .cursor/hooks/ensure-docs.py record`. It appends a path only when the edit is product code and the diff is more than whitespace or comments. The list is stored outside the repo, one file per conversation.
-- `stop` runs the same script. On a completed turn with `loop_count` 0 it deletes that list. When any path remains, it sends one follow-up (`loop_limit: 1`) that reads the Documancer skill and updates `.roots/docs/documancer/`:
-  - API, application, contracts, infrastructure, MCP, and `appsettings` / launch settings changes update `.userdocs/technical.json` and `.userdocs/technical.html`.
-  - `JeffyGPT.Web` UI source (`src/`, `index.html`, `public/`) updates `.userdocs/user-guide.json` and `.userdocs/user-guide.html`.
-  - A turn that changes both updates each of those documents in place. UAT is not generated.
-- Tests, generated output, lockfiles, `.roots/`, `.userdocs/`, and `.cursor/` do not start a follow-up. The follow-up stops without writing when the edit did not change behavior. File writes made only through the shell are not recorded.
+Repository coding values are documented in [AGENTS.md](../../AGENTS.md).

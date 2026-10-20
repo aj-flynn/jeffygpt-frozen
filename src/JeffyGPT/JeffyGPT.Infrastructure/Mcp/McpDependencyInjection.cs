@@ -19,6 +19,8 @@ public static class McpDependencyInjection
         services.AddSingleton<IToolExecutionPolicy, DefaultToolExecutionPolicy>();
         services.AddSingleton<IToolExecutor, ToolExecutor>();
         services.AddSingleton<IToolCatalog, McpToolCatalog>();
+        // Initialize the registry through IMcpToolBootstrapper before resolving the executor.
+        // The executor takes a fixed snapshot of the registered handlers.
         services.AddSingleton<IEnumerable<IToolHandler>>(sp =>
             sp.GetRequiredService<McpToolHandlerRegistry>().Handlers);
         return services;

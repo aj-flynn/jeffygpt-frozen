@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { streamChat } from '../api/chatClient';
+import { isChatHttpError, streamChat } from '../api/chatClient';
 import { canSendMessage } from '../api/chatComposer';
 import { isAbortError, shouldClearAbortController, toUserFacingError } from '../api/chatErrors';
 import type { HuntEpisode, RunningTool } from '../api/chatActivity';
 import {
-  committedMessagesFromReducerState,
   createChatStreamReducerState,
-  endStreamWithoutCompletion,
+  dropUncommittedUserMessage,
   reduceChatStreamEvent,
   startAssistantDraft,
   type AssistantDraft,
 } from '../api/chatStreamState';
-import { toOutboundChatRequest, type ChatMessageWithId } from '../api/chatHistory';
-import type { ChatStreamEvent } from '../api/chatTypes';
+import type { ChatMessageWithId } from '../api/chatHistory';
 
 export interface UseChatStreamResult {
   messages: ChatMessageWithId[];
@@ -26,19 +24,16 @@ export interface UseChatStreamResult {
 }
 
 /**
- * Owns the chat transcript and the streaming state machine: sending a message,
- * applying stream events, tool activity, errors, and cancellation.
+ * Paints the stream and remembers the conversation id.
+ * The server keeps the transcript the model sees.
  */
 export function useChatStream(): UseChatStreamResult {
-  const [messages, setMessages] = useState<ChatMessageWithId[]>([]);
-  const [assistantDraft, setAssistantDraft] = useState<AssistantDraft>({ status: 'idle' });
-  const [runningTools, setRunningTools] = useState<RunningTool[]>([]);
-  const [huntEpisodes, setHuntEpisodes] = useState<HuntEpisode[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState(() => createChatStreamReducerState([]));
+  const [requestError, setRequestError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
-  const reducerRef = useRef(createChatStreamReducerState([]));
+  const conversationIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -46,29 +41,12 @@ export function useChatStream(): UseChatStreamResult {
     };
   }, []);
 
-  function applyReducerState() {
-    const state = reducerRef.current;
-    setMessages(committedMessagesFromReducerState(state));
-    setAssistantDraft(state.assistantDraft);
-    setRunningTools(state.runningTools);
-    setHuntEpisodes(state.huntEpisodes);
-    if (state.errorContent !== null) {
-      setError(
-        toUserFacingError(
-          new Error(state.errorContent),
-          'The chat stream failed. Please try again.',
-        ),
-      );
-    }
-  }
-
-  function handleStreamEvent(streamEvent: ChatStreamEvent) {
-    reducerRef.current = reduceChatStreamEvent(reducerRef.current, streamEvent);
-    applyReducerState();
-  }
-
   function cancel() {
     abortControllerRef.current?.abort();
+  }
+
+  function dropUserMessage(userMessageId: string) {
+    setState((current) => dropUncommittedUserMessage(current, userMessageId));
   }
 
   async function send(text: string): Promise<void> {
@@ -84,33 +62,61 @@ export function useChatStream(): UseChatStreamResult {
       role: 'user',
       content: trimmed,
     };
-    const requestMessages = [...messages, userMessage];
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
-    reducerRef.current = startAssistantDraft(
-      createChatStreamReducerState(requestMessages, reducerRef.current.huntEpisodes),
+    setState((current) =>
+      startAssistantDraft(
+        createChatStreamReducerState([...current.messages, userMessage], current.huntEpisodes),
+      ),
     );
 
-    setError(null);
-    applyReducerState();
+    setRequestError(null);
     setSending(true);
 
+    let committed = false;
+
     try {
-      await streamChat(toOutboundChatRequest(requestMessages), {
-        signal: abortController.signal,
-        onEvent: handleStreamEvent,
-      });
+      const conversationId = await streamChat(
+        {
+          content: trimmed,
+          ...(conversationIdRef.current ? { conversationId: conversationIdRef.current } : {}),
+        },
+        {
+          signal: abortController.signal,
+          onConversationId: (id) => {
+            conversationIdRef.current = id;
+          },
+          onEvent: (event) => {
+            setState((current) => reduceChatStreamEvent(current, event));
+            if (event.type === 'assistant_message') {
+              committed = true;
+            }
+          },
+        },
+      );
+      conversationIdRef.current = conversationId;
+
+      if (!committed) {
+        dropUserMessage(userMessage.id);
+      }
     } catch (err) {
-      reducerRef.current = endStreamWithoutCompletion(reducerRef.current);
-      applyReducerState();
+      if (!committed) {
+        dropUserMessage(userMessage.id);
+      }
+
+      if (isChatHttpError(err) && err.status === 404) {
+        conversationIdRef.current = null;
+        setState(createChatStreamReducerState([]));
+      }
 
       if (isAbortError(err)) {
-        setError(null);
+        setRequestError(null);
+        setState((current) => ({ ...current, errorContent: null }));
         return;
       }
 
       console.error(err);
-      setError(toUserFacingError(err, 'Failed to send message'));
+      setRequestError(toUserFacingError(err, 'Failed to send message'));
     } finally {
       if (shouldClearAbortController(abortControllerRef.current, abortController)) {
         abortControllerRef.current = null;
@@ -120,11 +126,20 @@ export function useChatStream(): UseChatStreamResult {
     }
   }
 
+  const error =
+    requestError ??
+    (state.errorContent === null
+      ? null
+      : toUserFacingError(
+          new Error(state.errorContent),
+          'The chat stream failed. Please try again.',
+        ));
+
   return {
-    messages,
-    assistantDraft,
-    runningTools,
-    huntEpisodes,
+    messages: state.messages,
+    assistantDraft: state.assistantDraft,
+    runningTools: state.runningTools,
+    huntEpisodes: state.huntEpisodes,
     error,
     sending,
     send,

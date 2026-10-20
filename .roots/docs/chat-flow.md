@@ -13,7 +13,7 @@ User                ChatPanel          API              Orchestrator       Assis
   |                    |                |                    |                    |                |
   |-- type + send ---->|                |                    |                    |                |
   |                    |-- POST /api/chat/stream --------->|                    |                |
-  |                    |                |-- StreamAsync ---->|                    |                |
+  |                    |                |-- StartTurn ------>|                    |                |
   |                    |                |                    |-- CompleteStreamingAsync --------->|
   |                    |                |                    |<-- content deltas -|                |
   |                    |                |                    |-- assistant_delta events           |
@@ -45,7 +45,7 @@ User                ChatPanel          API              Orchestrator       Assis
 
 ### 2. API request
 
-`streamChat({ messages })` sends:
+`streamChat({ content, conversationId? })` sends:
 
 ```http
 POST /api/chat/stream
@@ -53,13 +53,11 @@ Content-Type: application/json
 Accept: application/x-ndjson
 
 {
-  "messages": [
-    { "role": "user", "content": "what time is it" }
-  ]
+  "content": "what time is it"
 }
 ```
 
-The client sends the **full conversation history**, not just the new message.
+The client sends new user text. The server keeps model history in memory and returns a conversation id in the `X-Conversation-Id` response header. Later requests include that id as `conversationId`.
 
 ### 3. Stream handling
 
@@ -68,14 +66,16 @@ The response is NDJSON — one event per line:
 | Event | UI effect |
 |-------|-----------|
 | `assistant_delta` | Append text to live assistant bubble |
-| `assistant_tool_round` | Stored in API history (assistant + `toolCalls`); not shown in transcript |
+| `assistant_tool_round` | Hold nonempty commentary from the latest tool round until the reply completes |
 | `tool_call_started` | Insert **Hunt** row if needed; show running tool in the dashed box; hide live bubble |
-| `tool_call_finished` | Remove that tool from the Hunt box; append `tool` message to API history |
-| `assistant_message` | Commit full API history (tool rounds + final reply); mark Hunt **Hunted**; clear running tools |
-| `error` | Show error; discard partial tool round from history; mark Hunt **Hunted**; clear running tools |
+| `tool_call_finished` | Remove that tool from the Hunt box; discard the result payload after handling the event |
+| `assistant_message` | Append pending commentary and the final reply; mark Hunt **Hunted**; clear running tools |
+| `error` | Show error; discard pending commentary; mark Hunt **Hunted**; clear running tools |
 | `done` | Ensure transient state is cleared; Hunt episodes that ran stay **Hunted** |
 
-The client keeps the **full API conversation history** in memory (user, assistant+toolCalls, tool results, final assistant replies). The visible transcript filters out `tool` messages and tool-only assistant rows — users see **Upstairs** / **Jeffy** messages plus Hunt/Hunted rows. Running tools appear inside the Hunt box and leave when they finish; after the request, the **Hunted** label remains. Hover or focus **Hunted** to see the tools that ran. The streaming bubble is transient during the request.
+The client keeps display messages (`id`, `role`, `content`) and tool activity in one stream state object. Tool-result JSON and tool-call arguments stay out of display history. Users see **Upstairs** / **Jeffy** messages plus Hunt/Hunted rows. Running tools appear inside the Hunt box and leave when they finish; after the request, the **Hunted** label remains. Hover or focus **Hunted** to see the tools that ran. The streaming bubble is transient during the request.
+
+An interrupted turn removes its optimistic user row and pending commentary. A 404 clears the local conversation and id so the next send starts a new conversation.
 
 ### 4. UI updates
 
@@ -100,16 +100,16 @@ Non-streaming clients receive a single `ChatResponse` JSON body after the full t
 | `POST /api/chat` | `HandleChat` | `ChatResponse` JSON |
 | `POST /api/chat/stream` | `HandleChatStream` | NDJSON stream of `ChatStreamEvent` |
 
-Both delegate to `IChatOrchestrator`. Validation errors return `400` JSON before any response body is written.
+Both delegate to `IChatOrchestrator`. Invalid user text returns HTTP 400, unknown conversation ids return 404, and busy conversations return 409. For streaming requests these checks run before opening the NDJSON response.
 
-### 2. Validation (`ChatRequestValidator`)
+### 2. Turn setup (`ChatOrchestrator.StartTurn`)
 
-Fails with `ArgumentException` if:
+- Require nonblank user text, trimmed to at most 32,000 characters
+- Create a conversation for a blank id, or find an existing conversation by id
+- Require an idle conversation whose saved content plus the new text fits the 128,000-character limit
+- Mark the conversation busy, copy its saved transcript, and append the user message
 
-- Messages null or empty
-- More than 50 messages, or content over per-message / total size caps
-- Any role other than `user` / `assistant`, or client-supplied `toolCalls` / `toolCallId`
-- No user-role message present
+`StartTurn` returns a `ChatTurn` with the id and events. Enumerating `ChatTurn.Events` runs the assistant/tool loop. A final reply commits the working transcript; an exception or cancellation before that reply discards it. The iterator releases the busy flag when it finishes or is disposed. Conversations are lost when the API restarts.
 
 ### 3. Personality (`JeffyPersonality`)
 
@@ -164,10 +164,11 @@ When the assistant returns tool calls:
 2. Execute each tool via `IToolExecutor`
 3. Append `role: "tool"` messages with structured JSON results
 4. Call the assistant again with the expanded conversation
-5. Repeat until the assistant returns a message with no tool calls, or the iteration limit (10) is reached
+5. Repeat until the assistant returns a message with no tool calls, or the limit of 40 tool rounds is reached
 
 **Sync response** contains:
 
+- **`conversationId`** — the id to send with the next user message
 - **`assistantMessage`** — the final assistant reply after tool results have been fed back
 - **`toolCalls`** / **`toolResults`** — accumulated from all tool rounds
 
@@ -180,7 +181,7 @@ When the assistant returns tool calls:
 **Request:**
 
 ```json
-{ "messages": [{ "role": "user", "content": "hello there" }] }
+{ "content": "hello there" }
 ```
 
 **Stream events (abbreviated):**
@@ -218,7 +219,7 @@ Prerequisite: `jeffymcp` must allow the filesystem tools (`Policy.AllowAllTools:
 **Request:**
 
 ```json
-{ "messages": [{ "role": "user", "content": "read docs overview" }] }
+{ "content": "read docs overview" }
 ```
 
 **Flow:**
@@ -234,13 +235,13 @@ Prerequisite: `jeffymcp` must allow the filesystem tools (`Policy.AllowAllTools:
 **Request:**
 
 ```json
-{ "messages": [] }
+{ "content": " " }
 ```
 
 **Response:** `400 Bad Request`
 
 ```json
-{ "error": "Messages cannot be null or empty." }
+{ "error": "A user message is required." }
 ```
 
 ## Multi-step tool use

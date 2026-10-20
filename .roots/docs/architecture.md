@@ -67,8 +67,7 @@ Does **not** contain fake LLM or tool logic. Does not expose document-write or i
 Business orchestration. Responsibilities:
 
 - Define interfaces for chat, assistant, tools
-- `ChatOrchestrator` — coordinates validation → tools → LLM → tool execution
-- `ChatRequestValidator` — request validation rules
+- `ChatOrchestrator` — validates new user text, keeps the in-memory transcript, and coordinates the assistant/tool loop
 
 Does **not** reference HTTP, databases, or specific LLM SDKs.
 
@@ -158,7 +157,7 @@ Registration is split across extension methods:
 | `AddApplication()` | Application | `IChatOrchestrator` → `ChatOrchestrator` |
 | `AddInfrastructure()` | Infrastructure | `IAssistantClient` (provider-selected); calls `AddMcpTools()` for MCP client + tool executor |
 
-`Program.cs` also calls `IMcpToolBootstrapper.InitializeAsync()` before the host runs.
+`Program.cs` calls `IMcpToolBootstrapper.InitializeAsync()` before the host runs or resolves the tool executor. The registry accepts one initialization, including an empty list. Reading it before initialization or replacing it afterward throws a clear error.
 
 `IChatOrchestrator`, `IToolCatalog`, and `IToolExecutor` are registered as **singletons**. `IAssistantClient` depends on `JeffyGPT:Assistant:Provider`:
 

@@ -5,8 +5,9 @@ export interface ChatMessageDto {
   toolCallId?: string;
 }
 
-export interface ChatRequest {
-  messages: ChatMessageDto[];
+export interface ChatTurnRequest {
+  conversationId?: string;
+  content: string;
 }
 
 export interface ToolCallDto {
@@ -22,6 +23,7 @@ export interface ToolResultDto {
 }
 
 export interface ChatResponse {
+  conversationId: string;
   assistantMessage: ChatMessageDto;
   toolCalls: ToolCallDto[];
   toolResults: ToolResultDto[];

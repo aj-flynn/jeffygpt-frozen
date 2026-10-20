@@ -197,7 +197,7 @@ Registers:
 
 Called from `Infrastructure/DependencyInjection.cs` after the assistant provider is selected.
 
-`Program.cs` calls `IMcpToolBootstrapper.InitializeAsync()` before accepting traffic.
+`Program.cs` calls `IMcpToolBootstrapper.InitializeAsync()` before accepting traffic or resolving the executor. The registry is initialized once; reading it before initialization or registering a replacement throws. An initialized empty registry is valid when no tools are configured.
 
 ### Multi-server tool naming
 

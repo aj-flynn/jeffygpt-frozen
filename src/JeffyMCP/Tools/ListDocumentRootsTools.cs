@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using JeffyMCP.Configuration;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Server;
@@ -9,6 +10,12 @@ namespace JeffyMCP.Tools;
 [McpServerToolType]
 public class ListDocumentRootsTools
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     private readonly ToolOptions _options;
 
     public ListDocumentRootsTools(IOptions<ToolOptions> options)
@@ -21,29 +28,14 @@ public class ListDocumentRootsTools
     public string ListDocumentRoots()
     {
         var roots = _options.FileSystem.GetConfiguredRoots()
-            .Select(kvp => BuildRootEntry(kvp.Key, kvp.Value))
+            .Select(root => new DocumentRootEntry(
+                root.Key,
+                string.IsNullOrWhiteSpace(root.Value.Description) ? null : root.Value.Description,
+                string.IsNullOrWhiteSpace(root.Value.EntryPoint) ? null : root.Value.EntryPoint))
             .ToArray();
 
-        return JsonSerializer.Serialize(new { roots });
+        return JsonSerializer.Serialize(new { roots }, SerializerOptions);
     }
 
-    private static object BuildRootEntry(string alias, FileSystemRootOptions options)
-    {
-        if (!string.IsNullOrWhiteSpace(options.Description) && !string.IsNullOrWhiteSpace(options.EntryPoint))
-        {
-            return new { alias, description = options.Description, entryPoint = options.EntryPoint };
-        }
-
-        if (!string.IsNullOrWhiteSpace(options.Description))
-        {
-            return new { alias, description = options.Description };
-        }
-
-        if (!string.IsNullOrWhiteSpace(options.EntryPoint))
-        {
-            return new { alias, entryPoint = options.EntryPoint };
-        }
-
-        return new { alias };
-    }
+    private sealed record DocumentRootEntry(string Alias, string? Description, string? EntryPoint);
 }

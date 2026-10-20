@@ -13,14 +13,17 @@ All interfaces live in `src/JeffyGPT/JeffyGPT.Application/Chat/`.
 Entry point for chat operations from the API layer.
 
 ```csharp
-Task<ChatResponse> SendAsync(ChatRequest request, CancellationToken cancellationToken = default);
+ChatTurn StartTurn(string? conversationId, string? content);
 
-IAsyncEnumerable<ChatStreamEvent> StreamAsync(
-    ChatRequest request,
+Task<ChatResponse> SendAsync(
+    string? conversationId,
+    string? content,
     CancellationToken cancellationToken = default);
 ```
 
-Implemented by `ChatOrchestrator`. `SendAsync` returns a single JSON response; `StreamAsync` yields NDJSON events for the web UI.
+Implemented by `ChatOrchestrator`. `StartTurn` returns a conversation id and an `IAsyncEnumerable<ChatStreamEvent>` in `ChatTurn.Events`. Reading those events runs the turn. `SendAsync` collects the same events into one response.
+
+The server stores conversations in memory. A blank id creates one; later requests send that id and only the new user text. The store lasts until the API restarts.
 
 ### IAssistantClient
 
@@ -92,7 +95,7 @@ Filesystem path sandbox types live in **JeffyMCP** (`JeffyMCP.FileSystem`), not 
 Evaluates a handler's security descriptor before execution.
 
 ```csharp
-ToolExecutionPolicyResult Evaluate(IToolHandler handler, ToolCallDto toolCall);
+ToolExecutionPolicyResult Evaluate(IToolHandler handler);
 ```
 
 Implemented by `DefaultToolExecutionPolicy` in Infrastructure. Denies **mutating** tools and tools that **require confirmation**. There is no confirmation prompt UI yet — `RequiresConfirmation: true` means **deny**. MCP tools allowed by per-server `Policy.AllowAllTools` or `Policy.AllowedTools` are registered as executable and are not re-checked here. Unapproved tools are not registered.
@@ -115,9 +118,9 @@ Personality lives in `JeffyPersonality.cs` as a C# raw string (`SystemPrompt`). 
 
 Orchestration steps:
 
-1. **Validate** — `ChatRequestValidator.Validate(request)`
+1. **Start the turn** — `StartTurn` validates user text, finds or creates the conversation, checks that it is idle and within the stored character limit, then copies the saved messages and appends the new user text
 2. **Load tools** — `_toolCatalog.GetTools()`
-3. **Personality** — `JeffyPersonality.WithSystemPrompt` inserts a server-owned `system` message (`JeffyPersonality.SystemPrompt`) ahead of client history. Clients cannot send `system`.
+3. **Personality** — `JeffyPersonality.WithSystemPrompt` inserts a server-owned `system` message (`JeffyPersonality.SystemPrompt`) ahead of the working transcript
 4. **Tool loop** (up to 40 rounds per request):
    - Call `_assistantClient.CompleteStreamingAsync(conversation, tools)`
    - If no tool calls → finish with the assistant message
@@ -127,35 +130,33 @@ Orchestration steps:
 
 If the iteration limit is reached while the assistant still requests tools, both paths return a **safe assistant message** explaining that the loop stopped after the configured maximum (40 tool rounds). Accumulated tool calls and results from completed rounds are still included in the sync `ChatResponse`. Each request starts a new count.
 
-`SendAsync` does not run a second loop. It collects the final assistant message, tool calls, and tool results from `StreamAsync`.
+`SendAsync` collects the final assistant message, tool calls, and tool results from `ChatTurn.Events`.
 
-### StreamAsync
+### Turn events and transcript storage
 
-`StreamAsync` is the tool loop. It yields `ChatStreamEvent` derived records (`AssistantDeltaEvent`, `AssistantToolRoundEvent`, `ToolCallStartedEvent`, `ToolCallFinishedEvent`, `AssistantMessageEvent`, `StreamErrorEvent`, `StreamDoneEvent` — see [Contracts](./backend-contracts.md)):
+The private `ReadEvents` iterator runs the tool loop. It yields `ChatStreamEvent` derived records (`AssistantDeltaEvent`, `AssistantToolRoundEvent`, `ToolCallStartedEvent`, `ToolCallFinishedEvent`, `AssistantMessageEvent`, `StreamErrorEvent`, `StreamDoneEvent` — see [Contracts](./backend-contracts.md)):
 
 1. Stream LLM content via `CompleteStreamingAsync` → yield `assistant_delta` for each token chunk
 2. When the LLM round completes with tool calls → yield `assistant_tool_round` (assistant message with `toolCalls`), then `tool_call_started`, execute tools, yield `tool_call_finished`
 3. When the LLM round completes without tool calls → yield `assistant_message`, then `done`
 
-If the iteration limit is reached while the assistant still requests tools, `StreamAsync` yields `assistant_message` with the same safe limit explanation, then `done` (no `error` event). Tool events from completed rounds are still emitted before the final message.
+If the iteration limit is reached while the assistant still requests tools, the iterator yields `assistant_message` with the same safe limit explanation, then `done`. Tool events from completed rounds are still emitted before the final message.
 
-## ChatRequestValidator
+After a final reply, the iterator saves the working transcript. An exception or cancellation before the final reply discards that copy. Its `finally` block releases the conversation's busy flag. Callers must consume or dispose the event iterator to release an active turn.
 
-**File:** `src/JeffyGPT/JeffyGPT.Application/Chat/ChatRequestValidator.cs`
+## Turn validation
 
-Public static class. Throws `ArgumentException` on invalid requests.
+Validation lives in `ChatOrchestrator.RequireUserText` and `TakeDraft`.
 
 | Rule | Error message |
 |------|---------------|
-| `Messages` is null or empty | `"Messages cannot be null or empty."` |
-| More than 50 messages | `"At most 50 messages are allowed."` |
-| Role other than `user` / `assistant` | `"Only 'user' and 'assistant' roles are allowed in client requests."` |
-| Client `toolCallId` or `toolCalls` | Rejected — tool rounds are rebuilt server-side within a turn |
-| Per-message content > 32,000 chars | `"Each message content must be at most 32000 characters."` |
-| Total content > 128,000 chars | `"Total message content must be at most 128000 characters."` |
-| No message with `role: "user"` | `"A user message is required."` |
+| Blank user text | `"A user message is required."` |
+| Trimmed text > 32,000 chars | `"Each message content must be at most 32000 characters."` |
+| Saved content plus new text > 128,000 chars | `"The conversation has reached its 128000 character limit."` |
+| Unknown or malformed conversation id | `ConversationNotFoundException` → HTTP 404 |
+| Conversation already running a turn | `ConversationBusyException` → HTTP 409 |
 
-Role comparison is case-insensitive. `system` and `tool` roles are not accepted from clients. The orchestrator prepends Jeffy’s system prompt itself.
+The request carries only `conversationId` and `content`; message roles and tool results are built on the server. When saving a completed draft over the character limit, `WithinStoredLimit` walks backward and retains messages that fit.
 
 ## DependencyInjection
 
@@ -173,11 +174,11 @@ Requires `Microsoft.Extensions.DependencyInjection.Abstractions`.
 
 ## Message roles
 
-The contracts use simple string roles. **Client requests** may only include `user` and `assistant` (content only). Tool rounds use `assistant`+`toolCalls` and `tool` internally during orchestration.
+The server builds messages with string roles. Clients send user text through `ChatTurnRequest`, not message arrays.
 
-| Role | Client request | Usage |
-|------|----------------|-------|
-| `user` | Allowed | User messages (at least one required) |
-| `assistant` | Allowed (content only) | Prior model replies in history |
-| `system` | Rejected from clients | Injected by `JeffyPersonality` on every assistant call |
-| `tool` | Rejected | Server-built tool results within a turn only |
+| Role | Usage |
+|------|-------|
+| `user` | Validated user text appended at the start of a turn |
+| `assistant` | Model replies and tool-call messages |
+| `system` | Injected by `JeffyPersonality` on every assistant call |
+| `tool` | Server-built tool results |
