@@ -1,6 +1,6 @@
 # Testing
 
-JeffyGPT uses xUnit for backend automated tests and Vitest for frontend predicate unit tests.
+JeffyGPT uses xUnit for backend automated tests and Vitest for frontend logic and hooks.
 
 ## Test projects
 
@@ -70,7 +70,6 @@ npm run crap
 ```
 Chat/
 ├── ChatOrchestratorTests.cs
-├── ChatRequestValidatorTests.cs
 ├── ChatStreamEventSerializationTests.cs
 └── JeffyPersonalityTests.cs
 Infrastructure/
@@ -184,14 +183,13 @@ Not currently tested:
 
 - Live JeffyMCP stdio subprocess from Api.Tests (by design: `TestMcpToolBootstrapper` + `Enabled=false`)
 - React component rendering and layout (predicate logic is unit-tested in Vitest)
-- `ChatRequestValidator` role allowlist / size limits (`Chat/ChatRequestValidatorTests.cs`)
 - JeffyMCP HTTP loopback bind rules and streamed sandboxed reads
-- Frontend: outbound history filtering, composer error mapping (`npm test`)
 - `FakeAssistantClient` directly
 - Live OpenAI or vLLM integration (handler-based unit tests only; no live LLM in CI)
 - CORS behavior
 - Authentication (not implemented)
-- Multi-message conversation history edge cases (frontend now stores full API history in-session; not covered by automated tests)
+
+`ChatOrchestratorTests` covers user-text validation, conversation ids, busy turns, and server-owned transcripts. Frontend tests cover display messages, tool activity, errors, and interrupted-turn cleanup. MCP catalog and dependency-injection tests check initialization order and reject registry replacement.
 
 ## Testing guidelines (from project rules)
 

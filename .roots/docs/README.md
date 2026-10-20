@@ -18,13 +18,11 @@ Detailed documentation for the JeffyGPT codebase.
 | [Branding & Themes](./branding-and-themes.md) | Visual identity, tokens, and theme switching |
 | [Testing](./testing.md) | Test projects, coverage, and how to run tests |
 | [Development Guide](./development.md) | Prerequisites, Aspire AppHost, run/build/debug workflows |
-| [Conference Demo](./conference-demo.md) | Matt Pocock skills + Cursor breakout for `search-files` |
+| [Conference Demo](./conference-demo.md) | Matt Pocock skills breakout for `search-files` |
 | [User guide (HTML)](../../.userdocs/user-guide.html) | How to start the chat, send a message, and read a file |
 | [Technical reference (HTML)](../../.userdocs/technical.html) | API, assistant provider, and MCP wiring |
 
 ## Quick links
 
 - Repository README: [../../README.md](../../README.md)
-- Project rules (agents): [../../.cursor/rules/project.mdc](../../.cursor/rules/project.mdc)
-- Documentation rules (agents): [../../.cursor/rules/docs.mdc](../../.cursor/rules/docs.mdc)
-- Branding rules (agents): [../../.cursor/rules/branding.mdc](../../.cursor/rules/branding.mdc)
+- Agent instructions: [../../AGENTS.md](../../AGENTS.md)

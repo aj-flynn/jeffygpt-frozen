@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isTranscriptVisibleMessage } from './chatHistory';
 import {
-  committedMessagesFromReducerState,
   createChatStreamReducerState,
-  endStreamWithoutCompletion,
+  dropUncommittedUserMessage,
+  endStream,
   reduceChatStreamEvent,
 } from './chatStreamState';
 import type { ChatMessageWithId } from './chatHistory';
@@ -110,10 +109,10 @@ describe('reduceChatStreamEvent', () => {
         calledTools: [{ id: 'call_1', toolName: 'get-current-time' }],
       },
     ]);
-    const visibleContent = committedMessagesFromReducerState(state)
-      .filter(isTranscriptVisibleMessage)
-      .map((message) => message.content);
-    expect(visibleContent).toEqual(['hello', 'It is midnight UTC.']);
+    expect(state.messages).toEqual([
+      userMessage,
+      { id: 'reply-msg_1', role: 'assistant', content: 'It is midnight UTC.' },
+    ]);
   });
 
   it('does not create a hunt episode when the assistant replies without tools', () => {
@@ -208,10 +207,48 @@ describe('reduceChatStreamEvent', () => {
       toolCall: { id: 'call_1', name: 'get-current-time', argumentsJson: '{}' },
     });
 
-    state = endStreamWithoutCompletion(state);
+    state = endStream(state);
 
     expect(state.assistantDraft).toEqual({ status: 'idle' });
     expect(state.runningTools).toEqual([]);
     expect(state.huntEpisodes[0]?.status).toBe('hunted');
+  });
+
+  it('keeps visible tool-round commentary when the reply completes, without tool metadata', () => {
+    let state = createChatStreamReducerState([userMessage]);
+    state = reduceChatStreamEvent(state, {
+      type: 'assistant_tool_round',
+      message: {
+        role: 'assistant',
+        content: 'Checking the time.',
+        toolCalls: [{ id: 'call_1', name: 'get-current-time', argumentsJson: '{}' }],
+      },
+    });
+    expect(state.messages).toEqual([userMessage]);
+
+    state = reduceChatStreamEvent(state, {
+      type: 'assistant_message',
+      message: { role: 'assistant', content: 'It is midnight.' },
+    });
+
+    expect(state.messages).toEqual([
+      userMessage,
+      { id: 'commentary-msg_1', role: 'assistant', content: 'Checking the time.' },
+      { id: 'reply-msg_1', role: 'assistant', content: 'It is midnight.' },
+    ]);
+    expect(new Set(state.messages.map((message) => message.id)).size).toBe(3);
+  });
+
+  it('discards uncommitted commentary and the optimistic user message on an interrupted turn', () => {
+    let state = createChatStreamReducerState([userMessage]);
+    state = reduceChatStreamEvent(state, {
+      type: 'assistant_tool_round',
+      message: { role: 'assistant', content: 'Still checking.' },
+    });
+
+    state = dropUncommittedUserMessage(state, userMessage.id);
+
+    expect(state.messages).toEqual([]);
+    expect(state.pendingAssistantCommentary).toBeNull();
   });
 });

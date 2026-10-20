@@ -104,7 +104,7 @@ Reusable behavior lives in `src/hooks/`:
 
 | File | Purpose |
 |------|---------|
-| `hooks/useChatStream.ts` | Wires `reduceChatStreamEvent` to React state; exposes `messages`, `assistantDraft`, `runningTools`, `huntEpisodes`, `error`, `sending`, `send(text)`, and `cancel()` |
+| `hooks/useChatStream.ts` | Holds one stream state object, applies events with functional state updates, and tracks request errors, sending status, cancellation, and the conversation id |
 | `hooks/useAutoResizeTextarea.ts` | Grows a textarea with its content between a min line count and a max line count |
 | `hooks/usePinnedToBottom.ts` | Tracks whether a scrollable element is pinned to its bottom edge; `scrollToBottomIfPinned` re-pins after content changes |
 
@@ -115,15 +115,14 @@ API calls live in `src/api/` — not inside components.
 | File | Purpose |
 |------|---------|
 | `api/chatTypes.ts` | TypeScript interfaces matching backend DTOs and stream events |
-| `api/chatHistory.ts` | Stream-to-history reducer and transcript visibility predicates |
-| `api/chatStreamState.ts` | Pure stream reducer (`reduceChatStreamEvent`) — history + transient UI state; tested in `chatStreamState.test.ts` |
+| `api/chatHistory.ts` | Display message type (`id`, `role`, `content`) and last-user-message lookup |
+| `api/chatStreamState.ts` | Pure stream reducer (`reduceChatStreamEvent`) — visible messages, assistant draft, and tool activity; tested in `chatStreamState.test.ts` |
 | `api/chatActivity.ts` | Hunt episode helpers. `runningTools` are in flight; `calledTools` are the finished list |
 | `api/chatDisplay.ts` | Empty-state check and Upstairs/Jeffy role labels |
 | `api/idleHuntStatus.ts` | Idle chrome status list and `pickIdleHuntStatus` |
 | `api/chatComposer.ts` | Send eligibility and the Enter-to-send shortcut |
 | `api/chatErrors.ts` | Abort detection, user-facing error text, and abort-controller identity |
 | `api/chatClient.ts` | `postChat(request)` → `POST /api/chat`; `streamChat(request, options)` → `POST /api/chat/stream` (used by `useChatStream`) |
-| `api/healthClient.ts` | `getHealth()` → `GET /health` (available; not wired to UI yet) |
 
 ### chatClient error handling
 
@@ -137,15 +136,17 @@ On non-OK responses, reads `{ error?: string }` from the body and throws `Error`
 
 1. User submits via Hunt button or Enter (Shift+Enter inserts newline)
 2. User message appended to local state immediately (with a stable `id` for React keys)
-3. `streamChat` called with `toOutboundChatRequest` (user/assistant content only) and an `AbortSignal`
+3. `streamChat` sends `{ content, conversationId? }` with an `AbortSignal`. The server owns the model transcript; the browser remembers the id returned in `X-Conversation-Id`
 4. During the stream:
    - `assistant_delta` events append to a live assistant draft (`{ status: 'streaming', text }`). An idle draft (`{ status: 'idle' }`) means no streaming bubble
-   - `assistant_tool_round` and `tool_call_finished` events update in-memory history via `applyStreamEvent` in `chatHistory.ts`
+   - `assistant_tool_round` holds nonempty commentary from the latest tool round until the final reply arrives; tool-call arguments and result JSON are not kept in display history
    - First `tool_call_started` inserts a **Hunt** row after that request's user message; running tools appear in the dashed box and leave on `tool_call_finished`
    - `error` latches failure (further events ignored); `done` / `assistant_message` / abort mark the episode **Hunted** and clear running tools
-5. On `assistant_message`, committed history includes tool-round messages plus the final assistant reply (tool rows stay local for UI; they are not resent)
+5. On `assistant_message`, the reducer appends any pending commentary and the final reply to display messages. An interrupted turn discards pending commentary and removes its optimistic user row
 6. Transient streaming state is cleared; a **Hunted** label remains if any tools ran. Hover or focus **Hunted** to see the tools that were called. Streams that end without `done`/`error` fail closed
-7. The transcript renders user-visible messages (`isTranscriptVisibleMessage`) plus Hunt/Hunted rows. Roles display as **Upstairs** / **Jeffy**
+7. The transcript renders the display messages directly, plus Hunt/Hunted rows. Roles display as **Upstairs** / **Jeffy**
+
+If the API returns 404 for an unknown conversation, the hook clears the local conversation and id so the next send starts a new one.
 
 In-flight streams are cancelled via **Cancel**, sending a new message, or unmount. Abort clears transient UI without treating abort as a hard error.
 

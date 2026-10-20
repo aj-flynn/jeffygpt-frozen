@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
+using JeffyGPT.Api.Endpoints;
 using JeffyGPT.Contracts.Chat;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -16,120 +17,79 @@ public class ChatEndpointTests : IClassFixture<JeffyGPTWebApplicationFactory>
     }
 
     [Fact]
-    public async Task PostChat_EmptyMessages_ReturnsBadRequest()
+    public async Task PostChat_WithoutId_ReturnsEchoAndAConversationId()
     {
-        var request = new ChatRequest([]);
-
-        var response = await _client.PostAsJsonAsync("/api/chat", request);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task PostChat_NormalMessage_ReturnsEchoResponse()
-    {
-        var request = new ChatRequest(
-        [
-            new ChatMessageDto("user", "hello there")
-        ]);
-
-        var response = await _client.PostAsJsonAsync("/api/chat", request);
+        var response = await _client.PostAsJsonAsync("/api/chat", new ChatTurnRequest(null, "hello there"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
         var body = await response.Content.ReadFromJsonAsync<ChatResponse>();
         Assert.NotNull(body);
-        Assert.Equal("assistant", body.AssistantMessage.Role);
         Assert.Equal("Echo: hello there", body.AssistantMessage.Content);
-        Assert.Empty(body.ToolCalls);
-        Assert.Empty(body.ToolResults);
+        Assert.NotEqual(Guid.Empty, Guid.ParseExact(body.ConversationId, "D"));
     }
 
     [Fact]
-    public async Task PostChat_MessageContainingTime_ReturnsFakeToolCallAndResult()
+    public async Task PostChat_UnknownId_ReturnsNotFound()
     {
-        var request = new ChatRequest(
-        [
-            new ChatMessageDto("user", "what time is it")
-        ]);
+        var response = await _client.PostAsJsonAsync(
+            "/api/chat",
+            new ChatTurnRequest(Guid.NewGuid().ToString("D"), "hello"));
 
-        var response = await _client.PostAsJsonAsync("/api/chat", request);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var body = await response.Content.ReadFromJsonAsync<ChatResponse>();
-        Assert.NotNull(body);
-        Assert.Equal("assistant", body.AssistantMessage.Role);
-        Assert.StartsWith("The current local time is ", body.AssistantMessage.Content);
-        Assert.EndsWith(".", body.AssistantMessage.Content);
-
-        var toolCall = Assert.Single(body.ToolCalls);
-        Assert.Equal("get-current-time", toolCall.Name);
-        Assert.Equal("{}", toolCall.ArgumentsJson);
-
-        var toolResult = Assert.Single(body.ToolResults);
-        Assert.Equal(toolCall.Id, toolResult.ToolCallId);
-        Assert.False(toolResult.IsError);
-        Assert.Contains("local", toolResult.ContentJson, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("application/json", response.Content.Headers.ContentType?.MediaType);
     }
 
     [Fact]
-    public async Task PostChatStream_EmptyMessages_ReturnsBadRequest()
+    public async Task PostChat_EmptyContent_ReturnsBadRequest()
     {
-        var request = new ChatRequest([]);
-
-        var response = await _client.PostAsJsonAsync("/api/chat/stream", request);
+        var response = await _client.PostAsJsonAsync("/api/chat", new ChatTurnRequest(null, "  "));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
-    public async Task PostChatStream_NormalMessage_ReturnsNdjsonStream()
+    public async Task PostChat_SecondTurn_AnswersTheNewMessageOnTheSameConversation()
     {
-        var request = new ChatRequest(
-        [
-            new ChatMessageDto("user", "hello there")
-        ]);
+        var first = await _client.PostAsJsonAsync("/api/chat", new ChatTurnRequest(null, "what time is it"));
+        var started = await first.Content.ReadFromJsonAsync<ChatResponse>();
+        Assert.NotNull(started);
+        Assert.StartsWith("The current local time is ", started.AssistantMessage.Content);
 
-        var response = await _client.PostAsJsonAsync("/api/chat/stream", request);
+        var second = await _client.PostAsJsonAsync(
+            "/api/chat",
+            new ChatTurnRequest(started.ConversationId, "hello"));
+
+        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        var body = await second.Content.ReadFromJsonAsync<ChatResponse>();
+        Assert.NotNull(body);
+        Assert.Equal("Echo: hello", body.AssistantMessage.Content);
+        Assert.Equal(started.ConversationId, body.ConversationId);
+    }
+
+    [Fact]
+    public async Task PostChatStream_ReturnsNdjsonAndTheConversationIdHeader()
+    {
+        var response = await _client.PostAsJsonAsync("/api/chat/stream", new ChatTurnRequest(null, "hello there"));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("application/x-ndjson", response.Content.Headers.ContentType?.MediaType);
+        var conversationId = Assert.Single(response.Headers.GetValues(ChatEndpoints.ConversationIdHeader));
+        Assert.NotEqual(Guid.Empty, Guid.ParseExact(conversationId, "D"));
 
         var events = await ReadNdjsonStreamAsync(response);
-        Assert.Contains(events, e => e is AssistantDeltaEvent);
         Assert.Equal("Echo: hello there", string.Concat(
             events.OfType<AssistantDeltaEvent>().Select(e => e.Content)));
-
-        var assistantMessage = Assert.Single(events.OfType<AssistantMessageEvent>());
-        Assert.Equal("Echo: hello there", assistantMessage.Message.Content);
         Assert.Contains(events, e => e is StreamDoneEvent);
     }
 
     [Fact]
-    public async Task PostChatStream_MessageContainingTime_IncludesToolEvents()
+    public async Task PostChatStream_MalformedId_ReturnsNotFound()
     {
-        var request = new ChatRequest(
-        [
-            new ChatMessageDto("user", "what time is it")
-        ]);
+        var response = await _client.PostAsJsonAsync(
+            "/api/chat/stream",
+            new ChatTurnRequest("not-a-guid", "hello"));
 
-        var response = await _client.PostAsJsonAsync("/api/chat/stream", request);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        var events = await ReadNdjsonStreamAsync(response);
-
-        var toolRoundIndex = events.FindIndex(e => e is AssistantToolRoundEvent);
-        var toolStartedIndex = events.FindIndex(e => e is ToolCallStartedEvent);
-        Assert.True(toolRoundIndex >= 0);
-        Assert.True(toolStartedIndex >= 0);
-        Assert.True(toolRoundIndex < toolStartedIndex);
-
-        Assert.Contains(events, e => e is ToolCallStartedEvent);
-        Assert.Contains(events, e => e is ToolCallFinishedEvent);
-        Assert.Contains(events, e => e is AssistantMessageEvent);
-        Assert.Contains(events, e => e is StreamDoneEvent);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<List<ChatStreamEvent>> ReadNdjsonStreamAsync(HttpResponseMessage response)
@@ -139,11 +99,7 @@ public class ChatEndpointTests : IClassFixture<JeffyGPTWebApplicationFactory>
 
         foreach (var line in json.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var streamEvent = JsonSerializer.Deserialize<ChatStreamEvent>(line, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-
+            var streamEvent = JsonSerializer.Deserialize<ChatStreamEvent>(line, ChatStreamJson.WireOptions);
             if (streamEvent is not null)
             {
                 events.Add(streamEvent);

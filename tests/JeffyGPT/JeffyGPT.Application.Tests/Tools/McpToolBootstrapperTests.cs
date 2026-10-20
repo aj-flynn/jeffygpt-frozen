@@ -54,7 +54,7 @@ public class McpToolBootstrapperTests
 
         Assert.Contains("jeffymcp", ex.Message, StringComparison.Ordinal);
         Assert.Contains("AllowedTools", ex.Message, StringComparison.OrdinalIgnoreCase);
-        Assert.Empty(registry.Handlers);
+        Assert.Throws<InvalidOperationException>(() => registry.Handlers);
     }
 
     [Fact]

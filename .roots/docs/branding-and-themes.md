@@ -12,8 +12,6 @@ JeffyGPT ships Look 07 Take: a centered den chat shell with rust accents, hard b
 | Roles | User **Upstairs**, assistant **Jeffy**, send **Hunt** |
 | Tool UI | In-transcript **Hunt** box while tools run; **Hunted** label remains (hover/focus lists called tools) |
 
-Agent-facing rules: `.cursor/rules/branding.mdc`
-
 ## Logo asset
 
 **Official icon (do not modify):**

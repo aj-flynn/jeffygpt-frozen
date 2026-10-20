@@ -49,19 +49,21 @@ Returns a `HealthResponse` record from Contracts. Used for liveness checks and f
 
 | Method | Route | Request | Success | Error |
 |--------|-------|---------|---------|-------|
-| `POST` | `/api/chat` | `ChatRequest` JSON body | `200` + `ChatResponse` | `400` + `{ "error": "..." }`; `502` when the assistant provider fails |
+| `POST` | `/api/chat` | `ChatTurnRequest` JSON body | `200` + `ChatResponse` | `400` invalid text; `404` unknown conversation; `409` busy conversation; `502` assistant failure |
 
 Handler signature:
 
 ```csharp
 private static async Task<IResult> HandleChat(
-    ChatRequest request,
+    ChatTurnRequest request,
     IChatOrchestrator orchestrator,
+    ILoggerFactory loggerFactory,
     CancellationToken cancellationToken)
 ```
 
 - Delegates all logic to `IChatOrchestrator.SendAsync`
 - Catches `ArgumentException` from validation and returns `400 Bad Request`
+- Maps unknown conversation ids to 404 and concurrent turns on a conversation to 409
 - Catches `AssistantClientException` from the OpenAI-compatible client and returns `502 Bad Gateway` with a safe `{ "error": "..." }` message (no upstream response body)
 - Does not contain echo, tool, or LLM logic
 
@@ -69,9 +71,11 @@ private static async Task<IResult> HandleChat(
 
 | Method | Route | Request | Success | Error |
 |--------|-------|---------|---------|-------|
-| `POST` | `/api/chat/stream` | `ChatRequest` JSON body | `200` + NDJSON stream | `400` + `{ "error": "..." }` (before stream opens); `error` stream event when the assistant provider fails mid-stream |
+| `POST` | `/api/chat/stream` | `ChatTurnRequest` JSON body | `200` + NDJSON stream | `400` invalid text, `404` unknown conversation, or `409` busy conversation before opening; `error` event for failures during streaming |
 
 Response content type: `application/x-ndjson` — one JSON object per line, flushed after each event.
+
+Both routes accept `{ "content": "hello", "conversationId": "optional-existing-id" }`. Omit or leave `conversationId` blank to start a conversation. Sync JSON includes `conversationId`; the streaming response returns it in the `X-Conversation-Id` header. Clients send that id with the next user message. The server stores the transcript until the API restarts.
 
 | Event `type` | Payload |
 |--------------|---------|
@@ -83,7 +87,7 @@ Response content type: `application/x-ndjson` — one JSON object per line, flus
 | `error` | `{ "content": "..." }` |
 | `done` | `{}` |
 
-Handler validates the request before opening the stream, then writes events from `IChatOrchestrator.StreamAsync`. If the assistant provider throws `AssistantClientException` during streaming, the handler writes one `error` event and stops. Client disconnect cancels in-flight LLM and tool work via `CancellationToken`.
+The handler calls `IChatOrchestrator.StartTurn` before opening the stream, then enumerates `ChatTurn.Events`. If the assistant provider throws `AssistantClientException` during streaming, the handler writes one `error` event and stops. Client disconnect cancels in-flight LLM and tool work via `CancellationToken`.
 
 ## CORS
 
@@ -91,6 +95,7 @@ Configured in `Program.cs`:
 
 - **All environments:** `http://localhost:5173` and `http://127.0.0.1:5173` only (not every loopback port — avoids local browser abuse until auth ships)
 - **Headers / methods:** any
+- **Exposed response header:** `X-Conversation-Id`
 
 Production CORS for non-local origins is not yet configured.
 
@@ -156,5 +161,5 @@ See [Development Guide](./development.md) for full debug workflow.
 REST Client / VS Code `.http` samples for local manual testing against `http://localhost:5008`:
 
 - `GET /health`
-- `POST /api/chat` with a minimal `ChatRequest` body
+- `POST /api/chat` with a minimal `ChatTurnRequest` body
 - `POST /api/chat/stream` with `Accept: application/x-ndjson` for NDJSON streaming

@@ -7,6 +7,46 @@ namespace JeffyMCP.Tests.Tools;
 
 public class ListDocumentRootsToolsTests
 {
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(" ", "\t")]
+    [InlineData("Description", null)]
+    [InlineData(null, "README.md")]
+    [InlineData("Description", "README.md")]
+    public void ListDocumentRoots_OmitsMissingMetadata(string? description, string? entryPoint)
+    {
+        var tools = new ListDocumentRootsTools(Options.Create(new ToolOptions
+        {
+            FileSystem = new FileSystemSandboxOptions
+            {
+                Roots = new Dictionary<string, FileSystemRootOptions>
+                {
+                    ["docs"] = new()
+                    {
+                        Path = ".roots/docs",
+                        Description = description,
+                        EntryPoint = entryPoint
+                    }
+                }
+            }
+        }));
+
+        using var document = JsonDocument.Parse(tools.ListDocumentRoots());
+        var root = document.RootElement.GetProperty("roots")[0];
+
+        Assert.Equal("docs", root.GetProperty("alias").GetString());
+        Assert.Equal(!string.IsNullOrWhiteSpace(description), root.TryGetProperty("description", out var descriptionValue));
+        Assert.Equal(!string.IsNullOrWhiteSpace(entryPoint), root.TryGetProperty("entryPoint", out var entryPointValue));
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            Assert.Equal(description, descriptionValue.GetString());
+        }
+        if (!string.IsNullOrWhiteSpace(entryPoint))
+        {
+            Assert.Equal(entryPoint, entryPointValue.GetString());
+        }
+    }
+
     [Fact]
     public void ListDocumentRoots_ReturnsConfiguredRootMetadataWithoutAbsolutePath()
     {

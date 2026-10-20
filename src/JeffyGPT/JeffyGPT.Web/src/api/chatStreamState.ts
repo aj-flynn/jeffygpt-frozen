@@ -5,21 +5,16 @@ import {
   type HuntEpisode,
   type RunningTool,
 } from './chatActivity';
-import {
-  applyStreamEvent,
-  createStreamHistoryState,
-  lastUserMessageId,
-  type ChatMessageWithId,
-  type StreamHistoryState,
-} from './chatHistory';
-import type { ChatStreamEvent } from './chatTypes';
+import { lastUserMessageId, type ChatMessageWithId } from './chatHistory';
+import type { ChatMessageDto, ChatStreamEvent } from './chatTypes';
 
 export type AssistantDraft = { status: 'idle' } | { status: 'streaming'; text: string };
 
 export const idleAssistantDraft: AssistantDraft = { status: 'idle' };
 
 export interface ChatStreamReducerState {
-  history: StreamHistoryState;
+  messages: ChatMessageWithId[];
+  pendingAssistantCommentary: ChatMessageWithId | null;
   assistantDraft: AssistantDraft;
   runningTools: RunningTool[];
   huntEpisodes: HuntEpisode[];
@@ -33,7 +28,8 @@ export function createChatStreamReducerState(
   huntEpisodes: HuntEpisode[] = [],
 ): ChatStreamReducerState {
   return {
-    history: createStreamHistoryState(messages),
+    messages,
+    pendingAssistantCommentary: null,
     assistantDraft: idleAssistantDraft,
     runningTools: [],
     huntEpisodes: markHuntEpisodesComplete(huntEpisodes),
@@ -52,27 +48,38 @@ export function startAssistantDraft(state: ChatStreamReducerState): ChatStreamRe
   };
 }
 
-/** Clears the live bubble and running tools when the stream ends without a completion event. */
-export function endStreamWithoutCompletion(state: ChatStreamReducerState): ChatStreamReducerState {
+/** Drops the optimistic user row when the server did not commit that turn. */
+export function dropUncommittedUserMessage(
+  state: ChatStreamReducerState,
+  userMessageId: string,
+): ChatStreamReducerState {
+  const ended = endStream(state);
+  const messages = ended.messages.filter((message) => message.id !== userMessageId);
+
+  return {
+    ...ended,
+    messages,
+    huntUserMessageId: lastUserMessageId(messages),
+  };
+}
+
+/** Clears transient activity when a stream finishes or stops. */
+export function endStream(state: ChatStreamReducerState): ChatStreamReducerState {
   return {
     ...state,
+    pendingAssistantCommentary: null,
     assistantDraft: idleAssistantDraft,
     runningTools: [],
     huntEpisodes: markHuntEpisodesComplete(state.huntEpisodes),
   };
 }
 
-function withHuntComplete(
-  state: ChatStreamReducerState,
-  history: StreamHistoryState,
-): ChatStreamReducerState {
-  return {
-    ...state,
-    history,
-    assistantDraft: idleAssistantDraft,
-    runningTools: [],
-    huntEpisodes: markHuntEpisodesComplete(state.huntEpisodes),
-  };
+function toDisplayMessage(message: ChatMessageDto, id: string): ChatMessageWithId | null {
+  if (message.role !== 'user' && message.role !== 'assistant') {
+    return null;
+  }
+
+  return { id, role: message.role, content: message.content };
 }
 
 function appendAssistantDraft(draft: AssistantDraft, content: string): AssistantDraft {
@@ -81,7 +88,7 @@ function appendAssistantDraft(draft: AssistantDraft, content: string): Assistant
 }
 
 /**
- * Single entry point for stream event handling: updates API history and transient UI state.
+ * Updates display messages and tool activity from server events.
  * Pure and testable without React.
  */
 export function reduceChatStreamEvent(
@@ -92,13 +99,10 @@ export function reduceChatStreamEvent(
     return state;
   }
 
-  const history = applyStreamEvent(state.history, event);
-
   switch (event.type) {
     case 'assistant_delta':
       return {
         ...state,
-        history,
         assistantDraft: appendAssistantDraft(state.assistantDraft, event.content),
       };
 
@@ -110,7 +114,6 @@ export function reduceChatStreamEvent(
 
       return {
         ...state,
-        history,
         assistantDraft: idleAssistantDraft,
         huntEpisodes: recordHuntTool(state.huntEpisodes, state.huntUserMessageId, tool),
         runningTools: [...state.runningTools, tool],
@@ -120,38 +123,42 @@ export function reduceChatStreamEvent(
     case 'tool_call_finished':
       return {
         ...state,
-        history,
         runningTools: removeRunningTool(state.runningTools, event.toolResult.toolCallId),
       };
 
     case 'assistant_tool_round':
       return {
         ...state,
-        history,
+        pendingAssistantCommentary: event.message.content.trim()
+          ? toDisplayMessage(event.message, `commentary-${state.huntUserMessageId}`)
+          : null,
         assistantDraft: idleAssistantDraft,
       };
 
-    case 'assistant_message':
-      return withHuntComplete(state, history);
+    case 'assistant_message': {
+      const message = toDisplayMessage(event.message, `reply-${state.huntUserMessageId}`);
+      const messages = [...state.messages];
+      if (message) {
+        if (state.pendingAssistantCommentary) {
+          messages.push(state.pendingAssistantCommentary);
+        }
+        messages.push(message);
+      }
+
+      return { ...endStream(state), messages };
+    }
 
     case 'error':
       return {
-        ...withHuntComplete(state, history),
+        ...endStream(state),
         streamFailed: true,
         errorContent: event.content,
       };
 
     case 'done':
-      return withHuntComplete(state, history);
+      return endStream(state);
 
     default:
-      return { ...state, history };
+      return state;
   }
-}
-
-/** Messages to show in the transcript after a stream event reduction. */
-export function committedMessagesFromReducerState(
-  state: ChatStreamReducerState,
-): ChatMessageWithId[] {
-  return state.history.committedMessages;
 }

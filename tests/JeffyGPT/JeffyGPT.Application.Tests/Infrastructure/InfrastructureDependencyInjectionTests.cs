@@ -12,6 +12,23 @@ namespace JeffyGPT.Application.Tests;
 public class InfrastructureDependencyInjectionTests
 {
     [Fact]
+    public async Task ToolExecutor_RequiresToolInitializationBeforeResolution()
+    {
+        var services = new ServiceCollection();
+        services.AddInfrastructure();
+        services.AddSingleton<IMcpToolBootstrapper, TestMcpToolBootstrapper>();
+        using var provider = services.BuildServiceProvider();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            provider.GetRequiredService<IToolExecutor>());
+        Assert.Contains("Initialize MCP tools", exception.Message, StringComparison.Ordinal);
+
+        await provider.GetRequiredService<IMcpToolBootstrapper>().InitializeAsync();
+
+        Assert.IsType<ToolExecutor>(provider.GetRequiredService<IToolExecutor>());
+    }
+
+    [Fact]
     public void AddInfrastructure_ProviderFake_ResolvesMcpToolServices()
     {
         var configuration = BuildConfiguration(new Dictionary<string, string?>

@@ -1,7 +1,23 @@
-import type { ChatRequest, ChatResponse, ChatStreamEvent } from './chatTypes';
+import type { ChatResponse, ChatStreamEvent, ChatTurnRequest } from './chatTypes';
 import { isTerminalStreamEventType, parseChatStreamLine } from './chatStreamParse';
 
-export async function postChat(request: ChatRequest): Promise<ChatResponse> {
+export const conversationIdHeader = 'X-Conversation-Id';
+
+export class ChatHttpError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ChatHttpError';
+    this.status = status;
+  }
+}
+
+export function isChatHttpError(err: unknown): err is ChatHttpError {
+  return err instanceof ChatHttpError;
+}
+
+export async function postChat(request: ChatTurnRequest): Promise<ChatResponse> {
   const response = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -9,8 +25,7 @@ export async function postChat(request: ChatRequest): Promise<ChatResponse> {
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Chat request failed: ${response.status}`);
+    throw await readHttpError(response, 'Chat request failed');
   }
 
   return response.json() as Promise<ChatResponse>;
@@ -19,9 +34,10 @@ export async function postChat(request: ChatRequest): Promise<ChatResponse> {
 export interface StreamChatOptions {
   signal?: AbortSignal;
   onEvent: (event: ChatStreamEvent) => void;
+  onConversationId?: (conversationId: string) => void;
 }
 
-export async function streamChat(request: ChatRequest, options: StreamChatOptions): Promise<void> {
+export async function streamChat(request: ChatTurnRequest, options: StreamChatOptions): Promise<string> {
   const response = await fetch('/api/chat/stream', {
     method: 'POST',
     headers: {
@@ -33,9 +49,15 @@ export async function streamChat(request: ChatRequest, options: StreamChatOption
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new Error(body?.error ?? `Chat stream failed: ${response.status}`);
+    throw await readHttpError(response, 'Chat stream failed');
   }
+
+  const conversationId = response.headers.get(conversationIdHeader);
+  if (!conversationId) {
+    throw new Error('Chat stream response did not include a conversation id.');
+  }
+
+  options.onConversationId?.(conversationId);
 
   if (!response.body) {
     throw new Error('Chat stream response did not include a body.');
@@ -75,6 +97,13 @@ export async function streamChat(request: ChatRequest, options: StreamChatOption
   }
 
   assertSawTerminalEvent(sawTerminalEvent);
+  return conversationId;
+}
+
+async function readHttpError(response: Response, fallbackPrefix: string): Promise<ChatHttpError> {
+  const body = (await response.json().catch(() => null)) as { error?: string } | null;
+  const message = body?.error ?? `${fallbackPrefix}: ${response.status}`;
+  return new ChatHttpError(response.status, message);
 }
 
 function consumeNdjsonLines(buffer: string, onLine: (line: string) => void): string {
