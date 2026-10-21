@@ -19,6 +19,7 @@
       main { padding-block: clamp(2rem, 8vw, 5rem); }
       .brand { margin: 0 0 2rem; font-weight: 750; letter-spacing: .04em; }
       h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.6rem); line-height: 1.15; letter-spacing: -.04em; }
+      h2 { margin: 3rem 0 1rem; font-size: 1.8rem; line-height: 1.2; }
       .intro { max-width: 42rem; margin-block: 1.25rem 2.5rem; color: var(--muted); }
       nav ul { display: grid; gap: 1rem; padding: 0; list-style: none; }
       nav a { display: block; padding: 1.5rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--panel); text-decoration: none; }
@@ -26,7 +27,7 @@
       a:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
       nav a:hover strong { text-decoration: underline; }
       strong { display: block; font-size: 1.25rem; }
-      nav span { display: block; margin-top: .4rem; color: var(--muted); }
+      nav span { display: block; margin-top: .4rem; color: var(--muted); overflow-wrap: anywhere; }
       .note { margin-top: 2rem; color: var(--muted); }
       footer { padding-block: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; }
     </style>
@@ -38,16 +39,30 @@
     <main>
       <p class="brand">JeffyGPT / Documentation</p>
       <h1>Start here. Explore JeffyGPT.</h1>
-      <p class="intro">Set up the local chat, understand how it works, watch the presentation, or try three sample acceptance tests.</p>
-      <nav aria-label="Documentation">
+      <p class="intro">Watch the presentation, explore JeffyGPT documentation, and find the GitHub repositories.</p>
+      <nav aria-label="Presentation, documentation and repositories">
         <ul>
-          <li><a href="user-guide.html"><strong>User guide</strong><span>Start JeffyGPT, send messages, choose an appearance and use document tools.</span></a></li>
-          <li><a href="technical.html"><strong>Technical reference</strong><span>Explore the architecture, local hosting, chat API, assistant configuration and MCP tools.</span></a></li>
           <li><a href="jeffy-engineers-software-agent-loop.html"><strong>Jeffy Engineers Software — Engineering the Agent Loop</strong><span>View the presentation slideshow about engineering the software agent loop.</span></a></li>
-          <li><a href="uat.html"><strong>Sample UAT plan</strong><span>Run three human acceptance tests and generate a summary of your results and notes.</span></a></li>
         </ul>
+        <section aria-labelledby="jeffy-documentation">
+          <h2 id="jeffy-documentation">Jeffy Documentation</h2>
+          <ul>
+            <li><a href="user-guide.html"><strong>User guide</strong><span>Start JeffyGPT, send messages, choose an appearance and use document tools.</span></a></li>
+            <li><a href="technical.html"><strong>Technical reference</strong><span>Explore the architecture, local hosting, chat API, assistant configuration and MCP tools.</span></a></li>
+            <li><a href="uat.html"><strong>Sample UAT plan</strong><span>Run three human acceptance tests and generate a summary of your results and notes.</span></a></li>
+          </ul>
+          <p class="note">The UAT plan is an untested sample. Its results and notes last only while the page stays open; generate and retain your summary before reloading. The guides retain their original documented versions.</p>
+        </section>
+        <section aria-labelledby="github-repos">
+          <h2 id="github-repos">GitHub Repos</h2>
+          <ul>
+            <li><a href="https://github.com/aj-flynn/jeffygpt-frozen"><strong>JeffyGPT</strong><span>https://github.com/aj-flynn/jeffygpt-frozen</span></a></li>
+            <li><a href="https://github.com/aj-flynn/documancer"><strong>Documancer</strong><span>https://github.com/aj-flynn/documancer</span></a></li>
+            <li><a href="https://github.com/aj-flynn/ct-style"><strong>CT Style</strong><span>https://github.com/aj-flynn/ct-style</span></a></li>
+            <li><a href="https://github.com/mattpocock/skills"><strong>Matt Pocock Skills</strong><span>https://github.com/mattpocock/skills</span></a></li>
+          </ul>
+        </section>
       </nav>
-      <p class="note">The UAT plan is an untested sample. Its results and notes last only while the page stays open; generate and retain your summary before reloading. The guides retain their original documented versions.</p>
     </main>
     <footer><a href="https://github.com/aj-flynn/jeffygpt-frozen">View the project on GitHub</a></footer>
   </body>
