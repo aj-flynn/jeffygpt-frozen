@@ -52,7 +52,7 @@ if (new URLSearchParams(location.search).get('theme') === 'light') {
 .runtime-prompt{display:grid;grid-template-columns:150px 1fr;align-items:start;gap:22px}.runtime-prompt>span{font:22px var(--mono);color:var(--amber);padding-top:23px}.runtime-prompt blockquote{margin:0;padding:22px 28px;background:var(--surface);font-size:32px;line-height:1.3;text-wrap:pretty}.evidence-chain{display:grid;grid-template-columns:1fr 36px 1fr 36px 1fr 36px 1fr;background:var(--code)}.evidence-chain>div{padding:26px 18px;text-align:center;min-width:0}.evidence-chain code{font-size:24px}.evidence-chain small{display:block;font-size:24px;margin-top:16px;line-height:1.3}.evidence-chain b{display:grid;place-items:center;color:var(--amber);font-size:30px}.jeffy-result{background:var(--highlight)}.runtime-checks{display:grid;grid-template-columns:1fr 1fr;gap:18px 35px;font-size:27px;color:var(--muted)}.runtime-checks span::before{content:'□';color:var(--green);margin-right:15px}
 .closing-three{display:grid;grid-template-columns:repeat(3,1fr);background:var(--code);gap:25px}.closing-three section{padding:28px 30px}.closing-index{display:none}.closing-three h3{font:600 42px var(--mono);letter-spacing:-.04em;margin:0 0 22px}.closing-three p{font-size:26px;color:var(--muted);margin-bottom:18px}.closing-three small{font-size:26px;color:var(--amber)}.closing-bottom{display:grid;grid-template-columns:1fr 280px;gap:40px;align-items:center;margin-top:8px}.closing-statement p{font-size:32px;color:var(--muted);margin:0 0 10px}.closing-statement strong{font-size:39px;line-height:1.2;font-weight:650;display:block;max-width:36ch}.closing-question{font-size:28px;margin-top:26px!important}.jeffy-hatch{background:var(--code);padding:15px 5px 0;border-top:4px solid var(--line)}.jeffy-hatch>svg{display:block;width:100%;height:140px}.jeffy-hatch .mouse-detector{justify-content:center;font-size:19px;padding:12px 10px;gap:8px}.jeffy-hatch .detector-mouse{width:65px}
 /* Navigation has its own space; it never covers a quote. */
-#controls{position:fixed;bottom:10px;left:16px;right:16px;max-width:1600px;margin:auto;display:flex;align-items:center;gap:8px;z-index:100;color:var(--muted);font-size:16px}#controls button{border:0;background:var(--surface);color:var(--ink);min-height:44px;min-width:44px;padding:9px 15px}#controls button:hover:not(:disabled){color:var(--ground);background:var(--amber)}#controls .counter{font-variant-numeric:tabular-nums;margin:0 14px;font-size:16px;white-space:nowrap}#controls #overview-button{margin-left:auto}#controls[data-hidden=true]{opacity:1;pointer-events:auto}
+#controls{position:fixed;bottom:10px;left:16px;right:16px;max-width:1600px;margin:auto;display:flex;align-items:center;gap:8px;z-index:100;color:var(--muted);font-size:16px}#controls button{border:0;background:var(--surface);color:var(--ink);min-height:44px;min-width:44px;padding:9px 15px}#controls button:hover:not(:disabled){color:var(--ground);background:var(--amber)}#controls .counter{font-variant-numeric:tabular-nums;margin:0 14px;font-size:16px;white-space:nowrap}#controls #theme-button{width:78px}#controls #overview-button{margin-left:auto}#controls[data-hidden=true]{opacity:1;pointer-events:auto}
 dialog{position:fixed;inset:0;max-width:1060px;width:calc(100% - 40px);max-height:88dvh;padding:0;background:var(--ground);color:var(--ink);border:2px solid var(--line)}dialog::backdrop{background:#000b}.dialog-head{padding:20px 26px;display:flex;align-items:center;justify-content:space-between;gap:24px}.dialog-head h2{font-size:26px;line-height:1.2;margin:0}.dialog-head button{border:0;background:transparent;color:var(--ink);font-size:32px;min-width:44px;min-height:44px}#overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 26px 26px}.overview-item{border:0;padding:22px;background:var(--surface);text-align:left;color:var(--ink)}.overview-item:hover,.overview-item[aria-current]{outline:2px solid var(--amber);outline-offset:-2px}.overview-item b{display:block;color:var(--amber);font-size:15px;margin-bottom:10px}.overview-item span{display:block;font-size:23px;line-height:1.2}.overview-item small{display:block;font-size:16px;margin-top:12px}#notes-body{padding:0 30px 28px;font-size:22px;line-height:1.5}#notes-body p{margin:18px 0}#notes-body li{margin-bottom:10px}#notes-body code{font-size:.85em;overflow-wrap:anywhere}#notes-body .notes-topic{font-size:18px;color:var(--amber)}#notes-body .source-note{font-size:17px;color:var(--muted);padding-top:15px;border-top:1px solid var(--line)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 #notes-dialog{height:min(760px,88dvh);overflow:hidden}#notes-dialog[open]{display:flex;flex-direction:column}#notes-dialog .dialog-head{flex-shrink:0}#notes-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
@@ -72,7 +72,7 @@ dialog{position:fixed;inset:0;max-width:1060px;width:calc(100% - 40px);max-heigh
  .review-axes section{padding:24px}.review-axes h3{font-size:26px;margin:20px 0}.review-axes ul{font-size:21px}.parallel-mark{font-size:28px;transform:rotate(90deg)}.review-command{display:block;font-size:20px;line-height:1.4}.review-command code{display:block;width:max-content;font-size:17px;margin-bottom:16px;padding:12px 16px}.branch-checklist li{padding:5px 0 15px;gap:15px}.branch-checklist li>span{font-size:16px}.branch-checklist strong{font-size:22px}.branch-checklist small{font-size:18px}.branch-checklist small code{font-size:16px}.fallback-box{padding:23px}.fallback-box .eyebrow{font-size:23px;margin-bottom:20px}.fallback-box ul{font-size:20px}
  .runtime-prompt{grid-template-columns:1fr;gap:14px}.runtime-prompt>span{padding:0;font-size:17px}.runtime-prompt blockquote{font-size:23px;padding:22px}.evidence-chain>div{padding:22px}.evidence-chain code{font-size:20px}.evidence-chain small{font-size:19px;margin-top:12px}.runtime-checks{grid-template-columns:1fr;font-size:21px;gap:18px}.closing-three{gap:0}.closing-three section{padding:24px}.closing-three h3{font-size:30px;margin-bottom:16px}.closing-three p,.closing-three small{font-size:21px}.closing-statement p{font-size:24px}.closing-statement strong{font-size:28px}.closing-question{font-size:22px;margin-top:24px!important}.jeffy-hatch{width:235px;max-width:100%;margin:0 auto}.jeffy-hatch>svg{height:130px}.jeffy-hatch .mouse-detector{font-size:15px}.jeffy-hatch .detector-mouse{width:50px}
  #controls{left:12px;right:12px;bottom:8px;background:var(--bg);gap:5px;padding:5px 0;font-size:13px}#controls button{font-size:13px;min-width:36px;padding:8px 9px}#controls .counter{font-size:13px;margin:0 5px}#controls #full-button{font-size:0}#controls #full-button::after{content:'Full';font-size:13px}#overview-grid{grid-template-columns:1fr;padding:0 18px 18px}.dialog-head{padding:16px 18px}.dialog-head h2{font-size:21px}#notes-body{padding:0 20px 20px;font-size:19px}dialog{width:calc(100% - 24px)}
- #viewport{padding-bottom:calc(var(--controls-space) + 12px)}#controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:'previous count count next' 'slides notes glossary fullscreen';gap:5px}#controls #prev{grid-area:previous}#controls #next{grid-area:next}#controls .counter{grid-area:count;text-align:center}#controls #overview-button{grid-area:slides;margin-left:0}#controls #notes-button{grid-area:notes}#controls #glossary-button{grid-area:glossary}#controls #full-button{grid-area:fullscreen}
+ #viewport{padding-bottom:calc(var(--controls-space) + 12px)}#controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:'previous count theme next' 'slides notes glossary fullscreen';gap:5px}#controls #theme-button{grid-area:theme;width:auto}#controls #prev{grid-area:previous}#controls #next{grid-area:next}#controls .counter{grid-area:count;text-align:center}#controls #overview-button{grid-area:slides;margin-left:0}#controls #notes-button{grid-area:notes}#controls #glossary-button{grid-area:glossary}#controls #full-button{grid-area:fullscreen}
  .glossary-tools{padding:0 20px 15px;display:block}.glossary-tools>p{font-size:16px;margin-bottom:16px}.glossary-scope button{font-size:16px;padding:9px 13px}#glossary-body{font-size:19px;padding:0 20px 22px}.glossary-entry{padding:20px 0}.glossary-entry dt{font-size:23px}.glossary-source{font-size:16px}
  .glossary-search{padding:0 20px 15px;font-size:17px}.glossary-search label{font-size:16px}.glossary-search button{font-size:16px;padding:9px 12px}#glossary-results{font-size:14px}
 }
@@ -887,6 +887,7 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
   <button id="prev" aria-label="Previous slide" title="Previous slide (←)">←</button>
   <span class="counter" id="counter">01 / 19</span>
   <button id="next" aria-label="Next slide" title="Next slide (→)">→</button>
+  <button id="theme-button" title="Switch to light mode (T)" aria-label="Switch to light mode">Light</button>
   <button id="overview-button" title="Overview (O)">Slides</button>
   <button id="notes-button" title="Additional context (N)">Notes</button>
   <button id="glossary-button" title="Glossary (G)" aria-haspopup="dialog" aria-controls="glossary-dialog">Glossary</button>
@@ -1106,6 +1107,7 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
   const deck = document.getElementById('deck');
   const counter = document.getElementById('counter');
   const controls = document.getElementById('controls');
+  const themeButton = document.getElementById('theme-button');
   const overview = document.getElementById('overview');
   const notesDialog = document.getElementById('notes-dialog');
   const notesTitle = document.getElementById('notes-title');
@@ -1208,6 +1210,22 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
     if(glossaryDialog.open)glossaryDialog.close();
     else{glossaryScope='slide';glossarySearch.value='';renderGlossary();glossaryDialog.showModal();}
   }
+  function updateThemeButton() {
+    const nextTheme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    themeButton.textContent = nextTheme === 'light' ? 'Light' : 'Dark';
+    themeButton.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+    themeButton.title = `Switch to ${nextTheme} mode (T)`;
+  }
+
+  function toggleTheme() {
+    const theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    const url = new URL(location.href);
+    url.searchParams.set('theme', theme);
+    history.replaceState(null, '', url);
+    updateThemeButton();
+  }
+
   async function toggleFullscreen() {
     try{
       if (!document.fullscreenElement){if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw new Error('Fullscreen unavailable');}
@@ -1220,6 +1238,7 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
     // Keep navigation in its own strip; it never covers slide content.
   }
 
+  themeButton.addEventListener('click', toggleTheme);
   document.getElementById('next').addEventListener('click', next);
   document.getElementById('prev').addEventListener('click', prev);
   document.getElementById('overview-button').addEventListener('click', toggleOverview);
@@ -1246,6 +1265,7 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
     else if (event.key.toLowerCase() === 'n') { event.preventDefault(); toggleNotes(); }
     else if (event.key.toLowerCase() === 'g') { event.preventDefault(); toggleGlossary(); }
     else if (event.key.toLowerCase() === 'f') { event.preventDefault(); toggleFullscreen(); }
+    else if (event.key.toLowerCase() === 't') { event.preventDefault(); toggleTheme(); }
     wakeControls();
   });
 
@@ -1272,6 +1292,7 @@ public void SearchFiles_MatchingContent_ReturnsRelativeResult()</code></pre>
     if (Number.isFinite(n) && n >= 1 && n <= slides.length) showSlide(n - 1, false);
   });
 
+  updateThemeButton();
   buildOverview();
   scaleDeck();
   const initial = Number(location.hash.slice(1));
