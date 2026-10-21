@@ -12,6 +12,9 @@
       }
       * { box-sizing: border-box; }
       body { margin: 0; background: var(--bg); color: var(--ink); font: 1.05rem/1.65 system-ui, sans-serif; }
+      .site-url { padding: clamp(1.25rem, 3vw, 3rem); border-bottom: 3px solid #285e45; background: #f5f1e8; color: #102d20; text-align: center; }
+      .site-url a { display: block; color: inherit; font-size: clamp(1.5rem, 4.2vw, 5.5rem); font-weight: 800; line-height: 1.2; letter-spacing: -.035em; overflow-wrap: anywhere; text-decoration: none; }
+      .site-url a:hover { text-decoration: underline; }
       main, footer { width: min(100% - 2.5rem, 58rem); margin-inline: auto; }
       main { padding-block: clamp(2rem, 8vw, 5rem); }
       .brand { margin: 0 0 2rem; font-weight: 750; letter-spacing: .04em; }
@@ -29,6 +32,9 @@
     </style>
   </head>
   <body>
+    <header class="site-url">
+      <a href="https://aj-flynn.github.io/jeffygpt-frozen/">https://aj-flynn.github.io/<wbr>jeffygpt-frozen/</a>
+    </header>
     <main>
       <p class="brand">JeffyGPT / Documentation</p>
       <h1>Start here. Explore JeffyGPT.</h1>
