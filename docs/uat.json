@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "mode": "uat",
+  "title": "JeffyGPT sample acceptance tests",
+  "lead": "Three independent checks for composing messages, receiving a reply and reading in either theme.",
+  "identity": {
+    "id": "JEFFYGPT-UAT-SAMPLE",
+    "version": "1.0",
+    "date": "2026-10-20",
+    "source": "Sample authored from source at cfa2a8fdf7059d8b06785d5ea3ecb3591bd6025e. Uncommitted changes add docs copies, an index and this plan. The copied guides retain their original source identities.",
+    "repositoryRoot": "C:\\repos\\jeffygpt-frozen",
+    "branch": "codex/sync-jeffygpt-main",
+    "commit": "cfa2a8fdf7059d8b06785d5ea3ecb3591bd6025e",
+    "readiness": "Source-based sample. Application journeys have not been rehearsed or accepted by a human."
+  },
+  "brand": { "name": "JeffyGPT", "logo": "none" },
+  "overview": [
+    { "type": "paragraph", "text": "Use these sample journeys to judge whether basic chat interactions are clear and usable. The plan covers empty-message protection, a deterministic reply using the Fake assistant, and appearance changes. It does not cover a real model, document tools or deployment. All results begin Untested." },
+    { "type": "callout", "title": "Keep your results", "text": "Results and notes are not saved on reload. Keep this plan open in its own tab, then use Generate summary and retain the text before closing or reloading. Documentation on GitHub Pages does not start the application; run JeffyGPT locally in a separate tab." }
+  ],
+  "sources": [
+    { "label": "User guide", "href": "user-guide.html" },
+    { "label": "Technical reference", "href": "technical.html" },
+    { "label": "Repository README", "href": "https://github.com/aj-flynn/jeffygpt-frozen/blob/cfa2a8fdf7059d8b06785d5ea3ecb3591bd6025e/README.md" }
+  ],
+  "setup": [
+    { "type": "paragraph", "text": "Use the checkout and commit listed above, .NET SDK 10.0 or later, Node.js 22.12 or later, npm and a desktop browser. No account, API key or document fixture is needed. Use the Fake assistant; a real model will not produce the exact echo expected below. Stop an existing local instance before starting these commands on the same ports." },
+    { "type": "heading", "text": "Terminal 1: build and start the API" },
+    { "type": "code", "language": "PowerShell", "text": "Set-Location C:\\repos\\jeffygpt-frozen\ndotnet build JeffyGPT.slnx\n$env:JeffyGPT__Assistant__Provider = 'Fake'\ndotnet run --project src/JeffyGPT/JeffyGPT.Api --launch-profile http" },
+    { "type": "heading", "text": "Terminal 2: start the browser UI" },
+    { "type": "code", "language": "PowerShell", "text": "Set-Location C:\\repos\\jeffygpt-frozen\\src\\JeffyGPT\\JeffyGPT.Web\nnpm ci\n$env:API_HTTP = 'http://localhost:5008'\nnpm run dev -- --port 5173 --strictPort" },
+    { "type": "steps", "items": ["Wait for the API to listen on http://localhost:5008 and Vite to show http://localhost:5173. Check http://localhost:5008/health returns status ok.", "Open http://localhost:5173 in a separate tab and keep this plan open. Begin each test by reloading only the application tab; that clears its conversation.", "Enter notes and choose Passed, Failed, Skipped, Blocked or Untested for each journey. If startup fails, record Blocked with the visible error rather than claiming acceptance.", "After testing, generate and retain the summary. Stop each local server with Ctrl+C. The temporary provider and API settings apply to their terminal sessions; close those terminals to discard them."] }
+  ],
+  "tests": [
+    {
+      "id": "UAT-01",
+      "title": "Prevent an empty message",
+      "brief": "Judge whether the Hunt button makes it clear when a message can be sent.",
+      "prerequisites": [{ "type": "paragraph", "text": "Open a fresh application tab at http://localhost:5173. Locate the Your message field and Hunt button. No conversation or extra data is needed." }],
+      "steps": ["Leave Your message empty and inspect Hunt.", "Enter three spaces and inspect Hunt again.", "Replace the spaces with Hello Jeffy and inspect Hunt without submitting.", "Remove the text and confirm the original empty state returns."],
+      "expected": "Hunt is disabled for empty or whitespace-only input, enabled for Hello Jeffy, then disabled after clearing. No chat turn appears during this test.",
+      "problemSigns": "An empty message can be submitted, valid text leaves Hunt disabled, or a message appears without submission.",
+      "reset": "Clear Your message or reload only the application tab. This test is independent of the others.",
+      "rehearsal": "Not rehearsed. Steps and expectations were checked against ChatComposer.tsx and chatComposer.ts; no human result is claimed."
+    },
+    {
+      "id": "UAT-02",
+      "title": "Send a message and read the reply",
+      "brief": "Judge whether the submitted message and the completed assistant reply are easy to follow.",
+      "prerequisites": [{ "type": "paragraph", "text": "Start the API with the Fake assistant as described in Shared setup. Reload only the application tab so its conversation is empty. Exact input: Hello Jeffy." }],
+      "steps": ["Type Hello Jeffy in Your message.", "Select Hunt once and wait for the reply to complete.", "Read both messages and inspect the composer after completion."],
+      "expected": "The conversation shows one user message reading Hello Jeffy and an assistant reply reading Echo: Hello Jeffy. There is no error. After completion, Your message is empty and editable, focus returns to it, and Hunt is disabled until new text is entered. The Fake response can finish too quickly to observe the temporary Cancel button.",
+      "problemSigns": "A missing or duplicated message, an unexpected reply with Fake selected, a visible request error or a composer that stays disabled after completion.",
+      "reset": "Reload only the application tab to clear the conversation. This sample sends no external model request and changes no document files.",
+      "rehearsal": "Not rehearsed. Expectations were checked against FakeAssistantClient.cs, ChatComposer.tsx and chatClient.ts; application startup and end-to-end behavior remain unverified."
+    },
+    {
+      "id": "UAT-03",
+      "title": "Switch the chat appearance",
+      "brief": "Judge whether both themes keep the composer and navigation controls readable.",
+      "prerequisites": [{ "type": "paragraph", "text": "Reload only the application tab. Find the theme button named Switch to light theme or Switch to dark theme. Use a browser that allows local storage to check persistence. Record the starting appearance before changing it." }],
+      "steps": ["Activate the theme button and confirm the page changes to the theme named by the button.", "Inspect text, Your message, Hunt and keyboard focus for readability in that theme.", "Activate the button again and inspect the other theme.", "Choose your preferred theme, then reload only the application tab and check the selected theme remains."],
+      "expected": "The page switches between light and dark. The button label changes to name the next available theme. Text, controls and keyboard focus remain visible in both appearances. The chosen theme survives a reload when local storage is available.",
+      "problemSigns": "A theme change has no visible effect, the button names the wrong next theme, unreadable controls or a saved preference that is lost despite available local storage.",
+      "reset": "Restore the starting theme with the theme button. Theme changes are saved in this browser; the other journeys do not depend on a particular theme.",
+      "rehearsal": "Not rehearsed. Expectations were checked against ThemeToggle.tsx, ThemeProvider.tsx and theme.ts. Visual acceptance is for the tester to record."
+    }
+  ]
+}

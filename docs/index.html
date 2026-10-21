@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>JeffyGPT documentation</title>
+    <style>
+      :root { color-scheme: light; --bg: #f5f1e8; --panel: #fffdf7; --ink: #203c31; --muted: #506258; --line: #c4cfc4; --accent: #285e45; }
+      @media (prefers-color-scheme: dark) {
+        :root { color-scheme: dark; --bg: #11251d; --panel: #193329; --ink: #f1eee3; --muted: #c1d0c4; --line: #456353; --accent: #b9dd9c; }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font: 1.05rem/1.65 system-ui, sans-serif; }
+      main, footer { width: min(100% - 2.5rem, 58rem); margin-inline: auto; }
+      main { padding-block: clamp(2rem, 8vw, 5rem); }
+      .brand { margin: 0 0 2rem; font-weight: 750; letter-spacing: .04em; }
+      h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.6rem); line-height: 1.15; letter-spacing: -.04em; }
+      .intro { max-width: 42rem; margin-block: 1.25rem 2.5rem; color: var(--muted); }
+      nav ul { display: grid; gap: 1rem; padding: 0; list-style: none; }
+      nav a { display: block; padding: 1.5rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--panel); text-decoration: none; }
+      a { color: var(--accent); text-underline-offset: .2em; }
+      a:focus-visible { outline: 3px solid var(--accent); outline-offset: 5px; }
+      nav a:hover strong { text-decoration: underline; }
+      strong { display: block; font-size: 1.25rem; }
+      nav span { display: block; margin-top: .4rem; color: var(--muted); }
+      .note { margin-top: 2rem; color: var(--muted); }
+      footer { padding-block: 1.5rem; border-top: 1px solid var(--line); font-size: .9rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="brand">JeffyGPT / Documentation</p>
+      <h1>Start here. Explore JeffyGPT.</h1>
+      <p class="intro">Set up the local chat, understand how it works, watch the presentation, or try three sample acceptance tests.</p>
+      <nav aria-label="Documentation">
+        <ul>
+          <li><a href="user-guide.html"><strong>User guide</strong><span>Start JeffyGPT, send messages, choose an appearance and use document tools.</span></a></li>
+          <li><a href="technical.html"><strong>Technical reference</strong><span>Explore the architecture, local hosting, chat API, assistant configuration and MCP tools.</span></a></li>
+          <li><a href="jeffy-engineers-software-agent-loop.html"><strong>Jeffy Engineers Software — Engineering the Agent Loop</strong><span>View the presentation slideshow about engineering the software agent loop.</span></a></li>
+          <li><a href="uat.html"><strong>Sample UAT plan</strong><span>Run three human acceptance tests and generate a summary of your results and notes.</span></a></li>
+        </ul>
+      </nav>
+      <p class="note">The UAT plan is an untested sample. Its results and notes last only while the page stays open; generate and retain your summary before reloading. The guides retain their original documented versions.</p>
+    </main>
+    <footer><a href="https://github.com/aj-flynn/jeffygpt-frozen">View the project on GitHub</a></footer>
+  </body>
+</html>

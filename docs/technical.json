@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "mode": "technical",
+  "title": "JeffyGPT technical reference",
+  "lead": "How the API, assistant provider, and tool server fit together.",
+  "identity": {
+    "id": "JEFFYGPT-TECH",
+    "version": "unreleased",
+    "date": "2026-10-04",
+    "source": "Working tree on feature/add-skills at 95e0d0e2. The application was not started.",
+    "branch": "feature/add-skills",
+    "commit": "95e0d0e2fbf749cc71c80010274f3b49157038b2",
+    "readiness": "Source inspection only"
+  },
+  "brand": {
+    "name": "JeffyGPT",
+    "logo": "none"
+  },
+  "overview": [
+    {
+      "type": "paragraph",
+      "text": "JeffyGPT is a local chat host. The React page posts to an ASP.NET Core API. The API validates the transcript, calls an assistant client, and executes tools through a Model Context Protocol server. The API owns tool execution. The model only requests calls."
+    },
+    {
+      "type": "paragraph",
+      "text": "There is no sign-in and no database. A fresh Development configuration uses the Fake assistant, so the process starts without an API key. This reference was written from source inspection. The processes were not started."
+    }
+  ],
+  "sources": [
+    {
+      "label": "Repository README",
+      "href": "https://github.com/aj-flynn/jeffygpt-frozen/blob/main/README.md"
+    },
+    {
+      "label": "Run and build notes",
+      "href": "https://github.com/aj-flynn/jeffygpt-frozen/blob/main/.roots/docs/development.md"
+    },
+    {
+      "label": "Tool server notes",
+      "href": "https://github.com/aj-flynn/jeffygpt-frozen/blob/main/.roots/docs/jeffymcp.md"
+    }
+  ],
+  "sections": [
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Contracts has no project references. Application depends on Contracts and registers ChatOrchestrator as IChatOrchestrator. Infrastructure depends on Application and Contracts and owns the assistant clients and the MCP client. The API depends on Application, Contracts, Infrastructure, and the Aspire service defaults. It also references JeffyMCP with ReferenceOutputAssembly set to false so a build of the API produces the stdio executable without taking a compile-time dependency on that assembly."
+        },
+        {
+          "type": "table",
+          "caption": "Runtime processes",
+          "columns": ["Process", "Owns"],
+          "rows": [
+            ["JeffyGPT.Web", "Browser chat. Posts to /api/chat/stream."],
+            ["JeffyGPT.Api", "HTTP host, orchestration, MCP client."],
+            ["JeffyMCP", "Tool host. Stdio when the API launches it. HTTP under Aspire."]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Infrastructure does not reference JeffyMCP. The API process is the MCP client. The AppHost starts JeffyMCP, the API, and the Vite app, and it waits for the API before starting the web app."
+        }
+      ]
+    },
+    {
+      "id": "hosting",
+      "title": "Local hosting",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Prerequisites stated by the repository are the .NET SDK 10.0 or later and Node.js 20 or later. The chat page is http://localhost:5173. CORS allows that origin and http://127.0.0.1:5173, any header, and any method. The API listens on http://localhost:5008 when started from its http profile. The Aspire http profile opens a dashboard at http://localhost:15073."
+        },
+        {
+          "type": "code",
+          "language": "shell",
+          "text": "dotnet run --project src/JeffyAspire/JeffyAspire.AppHost --launch-profile http"
+        },
+        {
+          "type": "paragraph",
+          "text": "Without Aspire, build the solution, run JeffyGPT.Api, then run npm run dev in src/JeffyGPT/JeffyGPT.Web. The Vite server proxies /api and /health to the API. GET /health is mapped by the API and returns HealthResponse with status ok. The exact JSON bytes were not locked by a test inspected here."
+        },
+        {
+          "type": "paragraph",
+          "text": "Chat routes use a fixed-window limiter named chat: 60 permits per minute and a queue limit of 0. A rejected request is HTTP 429. No response body is configured for that rejection."
+        }
+      ]
+    },
+    {
+      "id": "chat-api",
+      "title": "Chat API",
+      "blocks": [
+        {
+          "type": "table",
+          "caption": "Mapped routes",
+          "columns": ["Method", "Path", "Success"],
+          "rows": [
+            ["POST", "/api/chat", "200 and a ChatResponse"],
+            ["POST", "/api/chat/stream", "200 and application/x-ndjson"],
+            ["GET", "/health", "HealthResponse status ok"]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "ChatRequest has Messages. Each ChatMessageDto has Role, Content, optional ToolCalls, and optional ToolCallId. The client may send only user and assistant roles. A client message cannot include toolCallId or toolCalls. The server prepends the system prompt itself. Null or empty Messages, more than 50 messages, a null entry, content over 32,000 characters, or a total over 128,000 characters fails validation. At least one user message is required. Empty user content still counts as a user message."
+        },
+        {
+          "type": "paragraph",
+          "text": "Validation throws ArgumentException. Both chat routes catch that and return HTTP 400 with JSON property error set to the exception message. The sync route catches AssistantClientException as HTTP 502 with the exception message. Any other exception, except OperationCanceledException, becomes HTTP 500 and the fixed string An unexpected error occurred while processing the chat request. The stream route validates before it writes status 200. After the stream has started, AssistantClientException and other handler exceptions stay on HTTP 200 and are written as an error event. OperationCanceledException is not converted."
+        },
+        {
+          "type": "paragraph",
+          "text": "The sync response is ChatResponse: AssistantMessage, ToolCalls, and ToolResults. ToolCallDto is Id, Name, and ArgumentsJson. ToolResultDto is ToolCallId, ContentJson, and IsError. The host does not set custom HTTP JSON options, and a test inspected here does not lock the sync payload bytes. The stream writer does lock camelCase and omitted nulls."
+        }
+      ]
+    },
+    {
+      "id": "tool-loop",
+      "title": "Tool loop",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Both routes call ChatOrchestrator.CompleteStreamingAsync. The non-streaming CompleteAsync on the assistant client is not on this path. The orchestrator loads tools once, prepends the system prompt, and allows 40 executed tool rounds."
+        },
+        {
+          "type": "list",
+          "items": [
+            "Content deltas are assistant_delta events.",
+            "A finish with no tool calls emits assistant_message, then done.",
+            "A finish with tool calls emits assistant_tool_round, then tool_call_started and tool_call_finished for each call, then loops.",
+            "A tool result is appended as a tool message. IsError does not stop the loop.",
+            "If the model asks for tools after 40 rounds, those calls are not executed. The assistant message is The tool loop stopped after the maximum of 40 tool rounds. and the stream ends with done.",
+            "If the provider finishes without a completion, the stream emits error with Assistant stream ended without a completion. and does not emit done."
+          ]
+        },
+        {
+          "type": "code",
+          "language": "json",
+          "text": "{\"type\":\"tool_call_finished\",\"toolResult\":{\"toolCallId\":\"call_1\",\"contentJson\":\"{}\",\"isError\":false}}"
+        },
+        {
+          "type": "paragraph",
+          "text": "The sync handler drains the same events. It keeps the last assistant_message, every started tool call, and every finished result. It drops deltas, tool-round events, and done. A stream error becomes InvalidOperationException, which the sync catch turns into HTTP 500 and the generic unexpected-error string, not the stream text."
+        }
+      ]
+    },
+    {
+      "id": "assistant",
+      "title": "Assistant provider",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "JeffyGPT:Assistant:Provider accepts Fake and OpenAiCompatible, compared case-insensitively. Any other value throws at service registration: Unknown JeffyGPT:Assistant:Provider '{provider}'. Supported values: Fake, OpenAiCompatible. The class default and the Development appsettings value are Fake. The checked-in API appsettings.json has no Assistant section."
+        },
+        {
+          "type": "paragraph",
+          "text": "FakeAssistantClient returns Echo: plus the last user text. If that text contains read docs overview, ignoring case, it calls read-file for docs/overview.md instead. Otherwise, if the text contains time, it calls get-current-time. The overview phrase is tested first."
+        },
+        {
+          "type": "paragraph",
+          "text": "OpenAiCompatible defaults are base URL https://api.openai.com/v1, model gpt-5.4-nano, timeout 120 seconds, and RequireApiKey true. Development settings set ReasoningEffort to none. The property default is null. The key is resolved when the HTTP client is first created, not when services are registered. Resolution uses OpenAiCompatible.ApiKey when it is non-blank, otherwise the environment variable named by ApiKeyEnvironmentVariable, which defaults to OPENAI_API_KEY. RequireApiKey false returns an empty key and does not send a bearer token."
+        },
+        {
+          "type": "callout",
+          "title": "Missing key status is not established",
+          "text": "A missing key throws AssistantClientException from the HTTP client factory, before the chat handlers enter their catch blocks. The message is OpenAI-compatible assistant requires an API key. Set JeffyGPT:Assistant:OpenAiCompatible:ApiKey or the {environmentVariableName} environment variable. The HTTP status for that failure was not established by the handlers or by an endpoint test."
+        },
+        {
+          "type": "paragraph",
+          "text": "After the client exists, a failed provider response throws AssistantClientException with Assistant request failed ({statusCode} {reasonPhrase}). The provider body is not forwarded. An incomplete streamed tool call uses Streaming tool call was incomplete when the provider finished the stream."
+        }
+      ]
+    },
+    {
+      "id": "mcp",
+      "title": "MCP tools",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The API connects MCP servers during startup, before it accepts requests. The configured server id is jeffymcp. It is enabled and required. Policy.AllowAllTools is true, so every discovered tool is registered. Standalone API settings use stdio: command dotnet, argument the Debug JeffyMCP.dll under the JeffyMCP project, and that project folder as the working directory."
+        },
+        {
+          "type": "paragraph",
+          "text": "JeffyMCP itself uses stdio unless the process is started with --http. The HTTP launch profile passes --http and binds http://127.0.0.1:3001 when no URLs are configured. Aspire starts JeffyMCP with that HTTP profile, then sets the API server transport to Http and the endpoint to the Aspire HTTP endpoint. The stdio command in appsettings remains, and the client uses Endpoint when the transport is Http. HTTP mode is streamable HTTP and does not own the session."
+        },
+        {
+          "type": "paragraph",
+          "text": "With one enabled server, tool names are exposed unchanged. With more than one, the exposed name is {serverId}__{originalToolName}. Duplicate exposed names, compared case-insensitively, fail initialization. The declared tool names are get-current-time, list-document-roots, list-files, and read-file."
+        },
+        {
+          "type": "table",
+          "caption": "File-system roots in JeffyMCP appsettings",
+          "columns": ["Root id", "Path", "Entry"],
+          "rows": [
+            ["docs", "../../.roots/docs", "README.md"],
+            ["conspiracy-theories", "../../.roots/jeffy-conspiracies", "README.md"],
+            ["netflix", "../../.roots/netflix", "README.md"],
+            ["nfl-rosters", "../../.roots/nfl-rosters", "README.md"]
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "MaxReadBytes is 1048576. Allowed extensions are .md, .txt, .json, .cs, .ts, .tsx, and .css. Paths are resolved from the JeffyMCP content root. This inspection did not execute that resolution."
+        }
+      ]
+    },
+    {
+      "id": "recovery",
+      "title": "Startup failures",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "A required server that cannot connect fails startup with Required MCP server '{id}' failed to connect. A missing stdio entry point whose argument ends in .dll, .exe, or .csproj fails with MCP server '{id}' entry point was not found, and the message tells you to build JeffyMCP. A connectable server with AllowAllTools false and an empty AllowedTools list fails with MCP server '{id}' policy is invalid. The committed jeffymcp server sets AllowAllTools true, so that check passes."
+        },
+        {
+          "type": "paragraph",
+          "text": "JeffyMCP HTTP refuses a non-loopback bind unless both JeffyMCP:AllowNonLoopbackHttp and JeffyMCP:AllowUnauthenticatedNonLoopbackHttp are true. The failure text is JeffyMCP HTTP must bind to loopback only. A non-required server logs the connect error and continues. Zero enabled servers log a warning and register an empty catalog."
+        },
+        {
+          "type": "paragraph",
+          "text": "Aspire configures an HTTP health check of /alive on the JeffyMCP resource and /health on the API. The body of /alive is implemented with the shared service defaults and was not inspected in this pass."
+        }
+      ]
+    }
+  ]
+}
