@@ -1,3 +1,5 @@
+> The Cursor skill commands below are historical demo instructions. Current Codex work uses the single consolidated collection in `~/.codex/skills`; the old engineering wrapper is retired.
+
 # Conference Demo — search-files
 
 Breakout runbook for demonstrating [Matt Pocock skills](https://github.com/mattpocock/skills) while adding a JeffyMCP `search-files` tool.
